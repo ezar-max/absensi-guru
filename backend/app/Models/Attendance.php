@@ -1,0 +1,47 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class Attendance extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'schedule_id',
+        'date',
+        'status',
+        'arrived_at',
+        'late_minutes',
+        'note',
+        'recorded_by',
+        'updated_by',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'date' => 'date',
+            'late_minutes' => 'integer',
+        ];
+    }
+
+    public function schedule(): BelongsTo
+    {
+        return $this->belongsTo(Schedule::class, 'schedule_id');
+    }
+
+    public function recordedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'recorded_by');
+    }
+
+    public function updatedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
+}
+
