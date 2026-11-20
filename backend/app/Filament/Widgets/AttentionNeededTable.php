@@ -27,8 +27,22 @@ class AttentionNeededTable extends BaseWidget
         $currentTime = $now->format('H:i:s');
         $dayOfWeek = $now->dayOfWeekIso;
 
+        // Helper untuk mencocokkan tanggal presensi secara akurat
+        $getTodayAttendance = function (Schedule $record) use ($todayDate): ?Attendance {
+            $att = $record->attendances->first(function ($a) use ($todayDate) {
+                $d = $a->date instanceof Carbon ? $a->date->toDateString() : substr((string) $a->date, 0, 10);
+                return $d === $todayDate;
+            });
+
+            if (! $att && $record->relationLoaded('attendances')) {
+                $att = Attendance::where('schedule_id', $record->id)->where('date', $todayDate)->first();
+            }
+
+            return $att;
+        };
+
         return $table
-            ->description('Daftar jam pelajaran yang telah lewat jam selesai namun belum diabsen, atau guru tidak hadir.')
+            ->description('Daftar jam pelajaran yang telah lewat jam selesai namun belum diabsen, atau guru berhalangan hadir.')
             ->query(
                 Schedule::query()
                     ->where('schedules.day_of_week', $dayOfWeek)
@@ -38,8 +52,8 @@ class AttentionNeededTable extends BaseWidget
                         $q->where('periods.end_time', '<=', $currentTime)
                           ->whereDoesntHave('attendances', fn ($att) => $att->where('date', $todayDate));
 
-                        // 2. Atau sudah diabsen tapi statusnya kosong
-                        $q->orWhereHas('attendances', fn ($att) => $att->where('date', $todayDate)->where('status', 'kosong'));
+                        // 2. Atau sudah diabsen tapi statusnya kosong, izin, sakit, atau dinas
+                        $q->orWhereHas('attendances', fn ($att) => $att->where('date', $todayDate)->whereIn('status', ['kosong', 'izin', 'sakit', 'dinas']));
                     })
                     ->with(['schoolClass', 'period', 'subject', 'teacher', 'attendances' => fn ($att) => $att->where('date', $todayDate)])
                     ->select('schedules.*')
@@ -60,16 +74,59 @@ class AttentionNeededTable extends BaseWidget
                 Tables\Columns\TextColumn::make('issue_status')
                     ->label('Kondisi')
                     ->badge()
-                    ->state(function (Schedule $record) use ($todayDate): string {
-                        $att = $record->attendances->firstWhere('date', $todayDate);
-                        if ($att && $att->status === 'kosong') {
-                            return 'Guru Kosong (Tidak Hadir)';
+                    ->state(function (Schedule $record) use ($getTodayAttendance): string {
+                        $att = $getTodayAttendance($record);
+                        if (! $att) {
+                            return 'Terlewat Belum Diabsen';
                         }
-                        return 'Terlewat Belum Diabsen';
+
+                        return match ($att->status) {
+                            'kosong' => 'Guru Kosong (Tidak Hadir)',
+                            'izin' => 'Izin: ' . ($att->note ?: 'Terkonfirmasi'),
+                            'sakit' => 'Sakit: ' . ($att->note ?: 'Terkonfirmasi'),
+                            'dinas' => 'Dinas Luar: ' . ($att->note ?: 'Terkonfirmasi'),
+                            'hadir' => 'Hadir (Diabsen Admin)',
+                            'terlambat' => 'Terlambat (' . $att->late_minutes . ' mnt)',
+                            default => ucfirst($att->status),
+                        };
                     })
-                    ->color(fn (string $state): string => str_contains($state, 'Kosong') ? 'danger' : 'warning'),
+                    ->color(function (string $state): string {
+                        if (str_contains($state, 'Kosong')) return 'danger';
+                        if (str_contains($state, 'Terlewat')) return 'warning';
+                        if (str_contains($state, 'Hadir')) return 'success';
+                        if (str_contains($state, 'Izin') || str_contains($state, 'Dinas')) return 'info';
+                        if (str_contains($state, 'Sakit')) return 'warning';
+                        return 'gray';
+                    }),
             ])
             ->actions([
+                Tables\Actions\Action::make('markHadir')
+                    ->label('Catat Hadir')
+                    ->icon('heroicon-m-check-circle')
+                    ->color('success')
+                    ->button()
+                    ->size('xs')
+                    ->requiresConfirmation()
+                    ->modalHeading('Konfirmasi Catat Hadir')
+                    ->modalDescription(fn (Schedule $record) => "Tandai guru {$record->teacher?->name} ({$record->subject?->name}) sebagai Hadir pada jam ini?")
+                    ->action(function (Schedule $record) use ($todayDate): void {
+                        $att = Attendance::updateOrCreate(
+                            ['schedule_id' => $record->id, 'date' => $todayDate],
+                            [
+                                'status' => 'hadir',
+                                'arrived_at' => $record->period?->start_time ?? now()->format('H:i:s'),
+                                'late_minutes' => 0,
+                                'note' => 'Dicatat hadir langsung oleh Admin dari dashboard',
+                                'recorded_by' => Auth::id(),
+                                'updated_by' => Auth::id(),
+                            ]
+                        );
+
+                        AuditLog::log(Auth::user(), 'update', 'attendances', $att->id, ['action' => 'mark_hadir_from_dashboard']);
+
+                        Notification::make()->title('Slot berhasil dicatat sebagai Hadir')->success()->send();
+                    }),
+
                 Tables\Actions\Action::make('markKosong')
                     ->label('Catat Kosong')
                     ->icon('heroicon-m-x-circle')
@@ -77,7 +134,9 @@ class AttentionNeededTable extends BaseWidget
                     ->button()
                     ->size('xs')
                     ->requiresConfirmation()
-                    ->visible(fn (Schedule $record) => $record->attendances->firstWhere('date', $todayDate)?->status !== 'kosong')
+                    ->modalHeading('Konfirmasi Catat Kosong')
+                    ->modalDescription(fn (Schedule $record) => "Tandai guru {$record->teacher?->name} ({$record->subject?->name}) sebagai TIDAK HADIR / KOSONG pada jam ini?")
+                    ->visible(fn (Schedule $record) => $getTodayAttendance($record)?->status !== 'kosong')
                     ->action(function (Schedule $record) use ($todayDate): void {
                         $att = Attendance::updateOrCreate(
                             ['schedule_id' => $record->id, 'date' => $todayDate],
@@ -114,6 +173,7 @@ class AttentionNeededTable extends BaseWidget
                             ->required(),
                         Forms\Components\TextInput::make('note')
                             ->label('Alasan / Catatan')
+                            ->placeholder('Contoh: Sakit flu, Izin dinas MGMP, dll')
                             ->required()
                             ->maxLength(255),
                     ])
@@ -133,6 +193,25 @@ class AttentionNeededTable extends BaseWidget
                         AuditLog::log(Auth::user(), 'update', 'attendances', $att->id, ['action' => 'mark_izin_from_dashboard', 'data' => $data]);
 
                         Notification::make()->title("Slot berhasil dicatat sebagai {$data['status']}")->success()->send();
+                    }),
+
+                Tables\Actions\Action::make('resetSlot')
+                    ->label('Batal / Reset')
+                    ->icon('heroicon-m-arrow-path')
+                    ->color('gray')
+                    ->button()
+                    ->size('xs')
+                    ->requiresConfirmation()
+                    ->modalHeading('Batalkan Catatan Presensi?')
+                    ->modalDescription('Presensi untuk slot ini akan dihapus dan status akan kembali menjadi Terlewat Belum Diabsen.')
+                    ->visible(fn (Schedule $record) => $getTodayAttendance($record) !== null)
+                    ->action(function (Schedule $record) use ($todayDate, $getTodayAttendance): void {
+                        $att = $getTodayAttendance($record);
+                        if ($att) {
+                            AuditLog::log(Auth::user(), 'delete', 'attendances', $att->id, ['action' => 'reset_slot_from_dashboard']);
+                            $att->delete();
+                            Notification::make()->title('Catatan presensi berhasil direset')->success()->send();
+                        }
                     }),
             ])
             ->emptyStateHeading('Semua Jam Pelajaran Terkendali')
