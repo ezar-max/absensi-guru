@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "Absensi Guru",
+    "slug": "absensi-guru-mobile",
+    "scheme": "absensiguru",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "icon": "./assets/icon.png",
+    "android": {
+      "package": "com.sekolah.absensiguru",
+      "adaptiveIcon": {
+        "backgroundColor": "#2F5BEA",
+        "foregroundImage": "./assets/android-icon-foreground.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-secure-store"
+    ]
+  }
+}
