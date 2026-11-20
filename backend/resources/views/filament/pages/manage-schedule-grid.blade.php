@@ -157,128 +157,132 @@
 
         <!-- Modal Tambah / Edit Jadwal -->
         @if($isModalOpen)
-            <div class="grid-modal-backdrop">
-                <div class="grid-modal-card">
-                    <div class="grid-modal-header">
-                        <div class="grid-modal-title-wrap">
-                            <div class="grid-modal-icon-badge">
-                                <svg style="width: 1.25rem; height: 1.25rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-                                </svg>
+            <div x-data="{}" @keydown.escape.window="$wire.closeModal()">
+                <template x-teleport="body">
+                    <div class="grid-modal-backdrop" wire:key="schedule-modal-backdrop" wire:click.self="closeModal">
+                        <div class="grid-modal-card" wire:key="schedule-modal-card">
+                            <div class="grid-modal-header">
+                                <div class="grid-modal-title-wrap">
+                                    <div class="grid-modal-icon-badge">
+                                        <svg style="width: 1.25rem; height: 1.25rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 class="grid-modal-title">
+                                            {{ $editingScheduleId ? 'Ubah Jadwal Pelajaran' : 'Tambah Jadwal Pelajaran' }}
+                                        </h3>
+                                        <p class="grid-modal-subtitle">
+                                            {{ $selectedClass?->name }} • {{ $selectedClass?->academic_year }}
+                                        </p>
+                                    </div>
+                                </div>
+                                <button type="button" wire:click="closeModal" class="grid-modal-close-btn" title="Tutup">
+                                    <svg style="width: 1.25rem; height: 1.25rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
                             </div>
-                            <div>
-                                <h3 class="grid-modal-title">
-                                    {{ $editingScheduleId ? 'Ubah Jadwal Pelajaran' : 'Tambah Jadwal Pelajaran' }}
-                                </h3>
-                                <p class="grid-modal-subtitle">
-                                    {{ $selectedClass?->name }} • {{ $selectedClass?->academic_year }}
-                                </p>
+
+                            <!-- Info Slot Badge -->
+                            @php
+                                $pInfo = \App\Models\Period::find($modalPeriodId);
+                            @endphp
+                            <div class="grid-modal-info-bar">
+                                <div class="grid-modal-info-item">
+                                    <span class="grid-modal-info-label">Hari:</span>
+                                    <span class="grid-modal-info-pill">
+                                        {{ $days[$modalDayOfWeek] ?? '-' }}
+                                    </span>
+                                </div>
+                                <div class="grid-modal-info-item">
+                                    <span class="grid-modal-info-label">Jam:</span>
+                                    <span class="grid-modal-info-pill" style="background:#f1f5f9; color:#0f172a; border-color:#e2e8f0; font-family: monospace;">
+                                        {{ $pInfo?->label }} ({{ substr($pInfo?->start_time, 0, 5) }} – {{ substr($pInfo?->end_time, 0, 5) }})
+                                    </span>
+                                </div>
                             </div>
-                        </div>
-                        <button type="button" wire:click="closeModal" class="grid-modal-close-btn" title="Tutup">
-                            <svg style="width: 1.25rem; height: 1.25rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                    </div>
 
-                    <!-- Info Slot Badge -->
-                    @php
-                        $pInfo = \App\Models\Period::find($modalPeriodId);
-                    @endphp
-                    <div class="grid-modal-info-bar">
-                        <div class="grid-modal-info-item">
-                            <span class="grid-modal-info-label">Hari:</span>
-                            <span class="grid-modal-info-pill">
-                                {{ $days[$modalDayOfWeek] ?? '-' }}
-                            </span>
-                        </div>
-                        <div class="grid-modal-info-item">
-                            <span class="grid-modal-info-label">Jam:</span>
-                            <span class="grid-modal-info-pill" style="background:#f1f5f9; color:#0f172a; border-color:#e2e8f0; font-family: monospace;">
-                                {{ $pInfo?->label }} ({{ substr($pInfo?->start_time, 0, 5) }} – {{ substr($pInfo?->end_time, 0, 5) }})
-                            </span>
-                        </div>
-                    </div>
-
-                    <!-- Pilihan Mapel -->
-                    <div class="grid-modal-field">
-                        <label class="grid-modal-label">
-                            <span>Mata Pelajaran</span>
-                            <span class="grid-modal-label-required">*</span>
-                        </label>
-                        <div class="grid-modal-select-wrapper">
-                            <select
-                                wire:model="modalSubjectId"
-                                class="grid-modal-select"
-                            >
-                                <option value="">-- Pilih Mata Pelajaran --</option>
-                                @foreach(\App\Models\Subject::orderBy('name')->get() as $subj)
-                                    <option value="{{ $subj->id }}">{{ $subj->name }} ({{ $subj->code }})</option>
-                                @endforeach
-                            </select>
-                            <svg class="grid-modal-select-chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </div>
-                        @error('modalSubjectId') <span class="grid-modal-error">{{ $message }}</span> @enderror
-                    </div>
-
-                    <!-- Pilihan Guru dengan Deteksi Bentrok -->
-                    <div class="grid-modal-field">
-                        <label class="grid-modal-label">
-                            <span>Guru Pengampu</span>
-                            <span class="grid-modal-label-required">*</span>
-                        </label>
-                        <div class="grid-modal-select-wrapper">
-                            <select
-                                wire:model="modalTeacherId"
-                                class="grid-modal-select"
-                            >
-                                <option value="">-- Pilih Guru Pengampu --</option>
-                                @foreach($this->teacherOptions as $opt)
-                                    <option
-                                        value="{{ $opt['id'] }}"
-                                        @if($opt['is_conflict']) class="text-rose-600 font-semibold bg-rose-50" @endif
+                            <!-- Pilihan Mapel -->
+                            <div class="grid-modal-field">
+                                <label class="grid-modal-label">
+                                    <span>Mata Pelajaran</span>
+                                    <span class="grid-modal-label-required">*</span>
+                                </label>
+                                <div class="grid-modal-select-wrapper">
+                                    <select
+                                        wire:model="modalSubjectId"
+                                        class="grid-modal-select"
                                     >
-                                        {{ $opt['name'] }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <svg class="grid-modal-select-chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </div>
-                        @error('modalTeacherId') <span class="grid-modal-error">{{ $message }}</span> @enderror
+                                        <option value="">-- Pilih Mata Pelajaran --</option>
+                                        @foreach(\App\Models\Subject::orderBy('name')->get() as $subj)
+                                            <option value="{{ $subj->id }}">{{ $subj->name }} ({{ $subj->code }})</option>
+                                        @endforeach
+                                    </select>
+                                    <svg class="grid-modal-select-chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
+                                @error('modalSubjectId') <span class="grid-modal-error">{{ $message }}</span> @enderror
+                            </div>
 
-                        <div class="grid-modal-conflict-box">
-                            <svg class="grid-modal-conflict-icon" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                            </svg>
-                            <span class="grid-modal-conflict-text">Guru yang bertanda <b>[BENTROK]</b> sudah terjadwal mengajar di kelas lain pada jam & hari yang sama. Sistem menolak duplikasi jadwal.</span>
+                            <!-- Pilihan Guru dengan Deteksi Bentrok -->
+                            <div class="grid-modal-field">
+                                <label class="grid-modal-label">
+                                    <span>Guru Pengampu</span>
+                                    <span class="grid-modal-label-required">*</span>
+                                </label>
+                                <div class="grid-modal-select-wrapper">
+                                    <select
+                                        wire:model="modalTeacherId"
+                                        class="grid-modal-select"
+                                    >
+                                        <option value="">-- Pilih Guru Pengampu --</option>
+                                        @foreach($this->teacherOptions as $opt)
+                                            <option
+                                                value="{{ $opt['id'] }}"
+                                                @if($opt['is_conflict']) class="text-rose-600 font-semibold bg-rose-50" @endif
+                                            >
+                                                {{ $opt['name'] }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <svg class="grid-modal-select-chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
+                                @error('modalTeacherId') <span class="grid-modal-error">{{ $message }}</span> @enderror
+
+                                <div class="grid-modal-conflict-box">
+                                    <svg class="grid-modal-conflict-icon" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                    </svg>
+                                    <span class="grid-modal-conflict-text">Guru yang bertanda <b>[BENTROK]</b> sudah terjadwal mengajar di kelas lain pada jam & hari yang sama. Sistem menolak duplikasi jadwal.</span>
+                                </div>
+                            </div>
+
+                            <div class="grid-modal-footer">
+                                <button
+                                    type="button"
+                                    wire:click="closeModal"
+                                    class="grid-modal-btn-cancel"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    type="button"
+                                    wire:click="saveSlot"
+                                    class="grid-modal-btn-save"
+                                >
+                                    <svg style="width: 1rem; height: 1rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    <span>Simpan Jadwal</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
-
-                    <div class="grid-modal-footer">
-                        <button
-                            type="button"
-                            wire:click="closeModal"
-                            class="grid-modal-btn-cancel"
-                        >
-                            Batal
-                        </button>
-                        <button
-                            type="button"
-                            wire:click="saveSlot"
-                            class="grid-modal-btn-save"
-                        >
-                            <svg style="width: 1rem; height: 1rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                            </svg>
-                            <span>Simpan Jadwal</span>
-                        </button>
-                    </div>
-                </div>
+                </template>
             </div>
         @endif
     </div>
