@@ -56,11 +56,11 @@ export default function LoginScreen() {
     const target = serverUrlInput.trim().replace(/\/+$/, '');
     setTestStatus({ loading: true });
     try {
-      const res = await axios.get(`${target}/today`, { timeout: 4000 });
+      const res = await axios.get(`${target}/ping`, { timeout: 4000 });
       setTestStatus({ loading: false, success: true, message: `Terhubung! (Status: ${res.status})` });
     } catch (e: any) {
       if (e.response) {
-        setTestStatus({ loading: false, success: true, message: `Terhubung ke Laravel API! (Status: ${e.response.status})` });
+        setTestStatus({ loading: false, success: true, message: `Terhubung ke API! (Status: ${e.response.status})` });
       } else {
         setTestStatus({ loading: false, success: false, message: e.message || 'Koneksi gagal / timeout' });
       }

@@ -10,6 +10,13 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
+// Health / Ping (untuk cek koneksi dari mobile)
+Route::get('/ping', fn () => response()->json([
+    'status' => 'ok',
+    'app' => 'absensi-guru',
+    'time' => now()->toIso8601String(),
+]));
+
 // Auth
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
 

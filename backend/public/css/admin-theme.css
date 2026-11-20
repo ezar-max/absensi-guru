@@ -1183,6 +1183,300 @@ input::-ms-clear {
     white-space: nowrap;
 }
 
+/* ==========================================================================
+   Schedule Grid Modal Component (Tambah / Edit Jadwal)
+   ========================================================================== */
+
+.grid-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background-color: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    overflow-y: auto;
+}
+
+.grid-modal-card {
+    background-color: #ffffff;
+    border-radius: 1.25rem;
+    max-width: 540px;
+    width: 100%;
+    padding: 1.75rem;
+    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+    border: 1px solid #e2e8f0;
+    font-family: var(--admin-font);
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    animation: gridModalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes gridModalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.grid-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.grid-modal-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.grid-modal-icon-badge {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.75rem;
+    background-color: #eff6ff;
+    color: #0056b3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid #bfdbfe;
+}
+
+.grid-modal-title {
+    font-size: 1.125rem;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+}
+
+.grid-modal-subtitle {
+    font-size: 0.8125rem;
+    color: #64748b;
+    margin-top: 0.15rem;
+}
+
+.grid-modal-close-btn {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.grid-modal-close-btn:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+}
+
+.grid-modal-info-bar {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.875rem;
+    padding: 0.75rem 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.grid-modal-info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+.grid-modal-info-label {
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+.grid-modal-info-pill {
+    background-color: #eff6ff;
+    color: #0056b3;
+    font-weight: 700;
+    padding: 0.25rem 0.625rem;
+    border-radius: 0.5rem;
+    border: 1px solid #bfdbfe;
+    font-size: 0.8125rem;
+}
+
+.grid-modal-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+.grid-modal-label {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.grid-modal-label-required {
+    color: #ef4444;
+}
+
+.grid-modal-select-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.grid-modal-select {
+    width: 100%;
+    height: 2.75rem;
+    padding: 0.5rem 2.5rem 0.5rem 0.875rem;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 0.75rem;
+    background-color: #ffffff;
+    color: #0f172a;
+    font-size: 0.875rem;
+    font-weight: 600;
+    font-family: var(--admin-font);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    transition: all 0.15s ease;
+}
+
+.grid-modal-select:hover {
+    border-color: #94a3b8;
+}
+
+.grid-modal-select:focus {
+    border-color: #0056b3;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.15);
+}
+
+.grid-modal-select-chevron {
+    position: absolute;
+    right: 0.875rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #64748b;
+    width: 1.125rem;
+    height: 1.125rem;
+}
+
+.grid-modal-error {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #dc2626;
+    margin-top: 0.25rem;
+}
+
+.grid-modal-conflict-box {
+    background-color: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 0.75rem;
+    padding: 0.75rem 0.875rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.625rem;
+    margin-top: 0.5rem;
+}
+
+.grid-modal-conflict-icon {
+    width: 1.125rem;
+    height: 1.125rem;
+    color: #d97706;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+}
+
+.grid-modal-conflict-text {
+    font-size: 0.75rem;
+    color: #92400e;
+    line-height: 1.45;
+}
+
+.grid-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #f1f5f9;
+}
+
+.grid-modal-btn-cancel {
+    height: 2.625rem;
+    padding: 0 1.25rem;
+    border-radius: 0.6875rem;
+    background-color: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    font-size: 0.875rem;
+    font-weight: 600;
+    font-family: var(--admin-font);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.grid-modal-btn-cancel:hover {
+    background-color: #e2e8f0;
+    color: #0f172a;
+}
+
+.grid-modal-btn-save {
+    height: 2.625rem;
+    padding: 0 1.5rem;
+    border-radius: 0.6875rem;
+    background-color: #0056b3;
+    border: none;
+    color: #ffffff;
+    font-size: 0.875rem;
+    font-weight: 700;
+    font-family: var(--admin-font);
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 86, 179, 0.25);
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.grid-modal-btn-save:hover {
+    background-color: #004494;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0, 86, 179, 0.35);
+}
+
+.grid-modal-btn-save:active {
+    transform: scale(0.99);
+}
+
 /* Responsive for smaller screens */
 @media (max-width: 900px) {
     .auth-page-container {
