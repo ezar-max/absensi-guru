@@ -13,7 +13,6 @@ import {
   Image,
   ActivityIndicator,
   Dimensions,
-<<<<<<< HEAD
   Modal,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
@@ -27,18 +26,6 @@ import { Typography } from '../../src/constants/theme';
 import { getErrorMessage, SERVER_URL_KEY, API_BASE_URL } from '../../src/services/api';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-=======
-} from 'react-native';
-import { StatusBar } from 'expo-status-bar';
-import Svg, { Path, Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
-import { User, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react-native';
-import { useAuth } from '../../src/context/AuthContext';
-import { useTheme } from '../../src/context/ThemeContext';
-import { Typography } from '../../src/constants/theme';
-import { getErrorMessage } from '../../src/services/api';
->>>>>>> ce17adcbdba418abbabf8c1a6a932ff969965347
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function LoginScreen() {
   const { login } = useAuth();
@@ -151,7 +138,6 @@ export default function LoginScreen() {
           >
             {/* Top Branding Section */}
             <View style={styles.headerSection}>
-<<<<<<< HEAD
               {/* Tombol Pengaturan Server */}
               <TouchableOpacity
                 onPress={openServerSettings}
@@ -162,8 +148,6 @@ export default function LoginScreen() {
                 <Server size={18} color="#0056b3" />
               </TouchableOpacity>
 
-=======
->>>>>>> ce17adcbdba418abbabf8c1a6a932ff969965347
               <Image
                 source={require('../../assets/logo-tutwuri.png')}
                 style={styles.logoImage}
@@ -179,7 +163,6 @@ export default function LoginScreen() {
             {/* Login Form Section */}
             <View style={styles.formSection}>
               {errorMessage && (
-<<<<<<< HEAD
                 <TouchableOpacity
                   onPress={openServerSettings}
                   activeOpacity={0.88}
@@ -188,11 +171,6 @@ export default function LoginScreen() {
                   <Text style={styles.errorText}>{errorMessage}</Text>
                   <Text style={styles.errorHint}>Ketuk untuk periksa / ubah alamat IP Server</Text>
                 </TouchableOpacity>
-=======
-                <View style={styles.errorAlert}>
-                  <Text style={styles.errorText}>{errorMessage}</Text>
-                </View>
->>>>>>> ce17adcbdba418abbabf8c1a6a932ff969965347
               )}
 
               {/* Input Username atau NIS */}
@@ -256,7 +234,6 @@ export default function LoginScreen() {
                   </>
                 )}
               </TouchableOpacity>
-<<<<<<< HEAD
 
               {/* Slogan pemanis di bawah tombol login */}
               <View style={styles.subtextContainer}>
@@ -267,18 +244,12 @@ export default function LoginScreen() {
             </View>
 
             {/* Bottom Hero with School Building & Crisp Royal Blue Tone */}
-=======
-            </View>
-
-            {/* Bottom Hero with School Building & Blue Gradient Overlay */}
->>>>>>> ce17adcbdba418abbabf8c1a6a932ff969965347
             <View style={styles.bottomHeroContainer}>
               <Image
                 source={require('../../assets/school-building.jpg')}
                 style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
                 resizeMode="cover"
               />
-<<<<<<< HEAD
               {/* Crisp Royal Blue & Deep Navy Grading - Jernih, tidak mableng/berkabut putih */}
               <Svg height="100%" width="100%" style={StyleSheet.absoluteFill}>
                 <Defs>
@@ -287,22 +258,11 @@ export default function LoginScreen() {
                     <Stop offset="40%" stopColor="#00337f" stopOpacity="0.40" />
                     <Stop offset="72%" stopColor="#001d4a" stopOpacity="0.76" />
                     <Stop offset="100%" stopColor="#000d24" stopOpacity="0.94" />
-=======
-              {/* Blue Gradient Overlay */}
-              <Svg height="100%" width="100%" style={StyleSheet.absoluteFill}>
-                <Defs>
-                  <LinearGradient id="heroGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <Stop offset="0%" stopColor="#f8fafc" stopOpacity="0.85" />
-                    <Stop offset="28%" stopColor="#0284c7" stopOpacity="0.45" />
-                    <Stop offset="75%" stopColor="#0056b3" stopOpacity="0.75" />
-                    <Stop offset="100%" stopColor="#0a2a6b" stopOpacity="0.92" />
->>>>>>> ce17adcbdba418abbabf8c1a6a932ff969965347
                   </LinearGradient>
                 </Defs>
                 <Rect width="100%" height="100%" fill="url(#heroGradient)" />
               </Svg>
 
-<<<<<<< HEAD
               {/* Elegant Wave Transition di bagian atas foto gedung */}
               <View style={styles.heroTopWave} pointerEvents="none">
                 <Svg
@@ -318,8 +278,6 @@ export default function LoginScreen() {
                 </Svg>
               </View>
 
-=======
->>>>>>> ce17adcbdba418abbabf8c1a6a932ff969965347
               {/* Slogan at Bottom */}
               <View style={styles.sloganContainer}>
                 <View style={styles.sloganBar} />
@@ -328,7 +286,6 @@ export default function LoginScreen() {
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
-<<<<<<< HEAD
 
         {/* Modal Pengaturan Server Backend */}
         <Modal
@@ -418,8 +375,6 @@ export default function LoginScreen() {
             </View>
           </View>
         </Modal>
-=======
->>>>>>> ce17adcbdba418abbabf8c1a6a932ff969965347
       </View>
     </TouchableWithoutFeedback>
   );
@@ -450,7 +405,6 @@ const styles = StyleSheet.create({
   headerSection: {
     alignItems: 'center',
     paddingHorizontal: 24,
-<<<<<<< HEAD
     position: 'relative',
     width: '100%',
   },
@@ -473,14 +427,6 @@ const styles = StyleSheet.create({
     height: 64,
     marginBottom: 8,
   },
-=======
-  },
-  logoImage: {
-    width: 64,
-    height: 64,
-    marginBottom: 8,
-  },
->>>>>>> ce17adcbdba418abbabf8c1a6a932ff969965347
   schoolNameLine1: {
     fontFamily: Typography.fontFamily.bold,
     fontSize: 12,
@@ -530,7 +476,6 @@ const styles = StyleSheet.create({
     color: '#b91c1c',
     textAlign: 'center',
   },
-<<<<<<< HEAD
   errorHint: {
     fontFamily: Typography.fontFamily.medium,
     fontSize: 11,
@@ -539,8 +484,6 @@ const styles = StyleSheet.create({
     marginTop: 4,
     textDecorationLine: 'underline',
   },
-=======
->>>>>>> ce17adcbdba418abbabf8c1a6a932ff969965347
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -596,7 +539,6 @@ const styles = StyleSheet.create({
   arrowIcon: {
     marginLeft: 2,
   },
-<<<<<<< HEAD
   subtextContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -631,13 +573,6 @@ const styles = StyleSheet.create({
     right: 0,
     height: 32,
     zIndex: 2,
-=======
-  bottomHeroContainer: {
-    width: '100%',
-    height: 220,
-    marginTop: 'auto',
-    overflow: 'hidden',
->>>>>>> ce17adcbdba418abbabf8c1a6a932ff969965347
   },
   bottomHeroImage: {
     width: '100%',
@@ -654,7 +589,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 20,
     paddingBottom: Platform.OS === 'ios' ? 28 : 20,
-<<<<<<< HEAD
     zIndex: 3,
   },
   sloganBar: {
@@ -712,24 +646,6 @@ const styles = StyleSheet.create({
     color: '#64748b',
     marginBottom: 16,
     lineHeight: 18,
-=======
-    zIndex: 2,
-  },
-  sloganBar: {
-    width: 20,
-    height: 2,
-    backgroundColor: '#ffffff',
-    marginRight: 8,
-    opacity: 0.85,
-    borderRadius: 1,
-  },
-  sloganText: {
-    fontFamily: Typography.fontFamily.medium,
-    fontSize: 11,
-    color: '#ffffff',
-    letterSpacing: 0.3,
-    opacity: 0.95,
->>>>>>> ce17adcbdba418abbabf8c1a6a932ff969965347
   },
   serverInputContainer: {
     backgroundColor: '#f8fafc',
