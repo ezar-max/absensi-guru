@@ -18,61 +18,70 @@ export const StatusChip: React.FC<StatusChipProps> = ({ status, lateMinutes = 0 
   let Icon = Check;
   let textColor = colors.text;
   let bgColor = colors.neutralSoft;
+  let borderColor = colors.border;
 
   switch (status) {
     case 'hadir':
-      label = 'Hadir';
+      label = 'Hadir Tepat Waktu';
       Icon = Check;
-      textColor = colors.success;
-      bgColor = colors.successSoft;
+      textColor = '#059669';
+      bgColor = '#ecfdf5';
+      borderColor = '#a7f3d0';
       break;
     case 'terlambat':
       label = lateMinutes > 0 ? `Terlambat +${lateMinutes}m` : 'Terlambat';
       Icon = Clock;
-      textColor = colors.warning;
-      bgColor = colors.warningSoft;
+      textColor = '#d97706';
+      bgColor = '#fffbeb';
+      borderColor = '#fde68a';
       break;
     case 'kosong':
-      label = 'Kosong';
+      label = 'Guru Kosong';
       Icon = X;
-      textColor = colors.danger;
-      bgColor = colors.dangerSoft;
+      textColor = '#dc2626';
+      bgColor = '#fef2f2';
+      borderColor = '#fecaca';
       break;
     case 'izin':
       label = 'Izin';
       Icon = Info;
-      textColor = colors.info;
-      bgColor = colors.infoSoft;
+      textColor = '#4f46e5';
+      bgColor = '#eef2ff';
+      borderColor = '#c7d2fe';
       break;
     case 'sakit':
       label = 'Sakit';
       Icon = Info;
-      textColor = colors.info;
-      bgColor = colors.infoSoft;
+      textColor = '#7c3aed';
+      bgColor = '#f5f3ff';
+      borderColor = '#ddd6fe';
       break;
     case 'dinas':
-      label = 'Dinas';
+      label = 'Tugas Dinas';
       Icon = Info;
-      textColor = colors.info;
-      bgColor = colors.infoSoft;
+      textColor = '#0284c7';
+      bgColor = '#f0f9ff';
+      borderColor = '#bae6fd';
       break;
     case 'belum_mulai':
-      label = 'Belum mulai';
+      label = 'Belum Mulai';
       Icon = CircleDashed;
-      textColor = colors.neutral;
-      bgColor = colors.neutralSoft;
+      textColor = '#64748b';
+      bgColor = '#f8fafc';
+      borderColor = '#e2e8f0';
       break;
     case 'belum_diabsen':
-      label = 'Belum diabsen';
+      label = 'Belum Diabsen';
       Icon = AlertTriangle;
-      textColor = colors.warning;
-      bgColor = colors.warningSoft;
+      textColor = '#ea580c';
+      bgColor = '#fff7ed';
+      borderColor = '#fed7aa';
       break;
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: bgColor }]}>
-      <Icon size={13} color={textColor} strokeWidth={2.5} style={styles.icon} />
+    <View style={[styles.container, { backgroundColor: bgColor, borderColor }]}>
+      <Icon size={12} color={textColor} strokeWidth={2.3} style={styles.icon} />
       <Text style={[styles.text, { color: textColor }]}>
         {label}
       </Text>
@@ -85,8 +94,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 9,
-    paddingVertical: 5,
+    paddingVertical: 4.5,
     borderRadius: Radius.chip,
+    borderWidth: 1,
     alignSelf: 'flex-start',
   },
   icon: {
@@ -98,4 +108,3 @@ const styles = StyleSheet.create({
     lineHeight: 15,
   },
 });
-

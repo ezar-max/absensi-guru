@@ -6,12 +6,12 @@ import {
   TouchableOpacity,
   TextInput,
   StyleSheet,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   TouchableWithoutFeedback,
+  ScrollView,
 } from 'react-native';
-import { X, UserX, FileText, HeartPulse, Briefcase, AlertTriangle } from 'lucide-react-native';
+import { X, UserX, FileText, HeartPulse, Briefcase, AlertTriangle, CheckCircle } from 'lucide-react-native';
 import { useTheme } from '../context/ThemeContext';
 import { Radius, Spacing, Typography } from '../constants/theme';
 import { SlotData } from './SlotCard';
@@ -87,18 +87,23 @@ export const ActionBottomSheet: React.FC<ActionBottomSheetProps> = ({
               behavior={Platform.OS === 'ios' ? 'padding' : undefined}
               style={[styles.sheetContainer, { backgroundColor: colors.surface }]}
             >
+              {/* Drag Handle Bar */}
+              <View style={styles.handleContainer}>
+                <View style={styles.handleBar} />
+              </View>
+
               {/* Header */}
               <View style={styles.sheetHeader}>
-                <View>
+                <View style={{ flex: 1 }}>
                   <Text style={[styles.sheetTitle, { color: colors.text }]}>
                     Catat Status Kehadiran
                   </Text>
-                  <Text style={[styles.sheetSubtitle, { color: colors.textMuted }]}>
+                  <Text style={[styles.sheetSubtitle, { color: colors.textMuted }]} numberOfLines={1}>
                     {slot.subject} — {slot.teacher}
                   </Text>
                 </View>
-                <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-                  <X size={20} color={colors.textMuted} />
+                <TouchableOpacity onPress={onClose} style={styles.closeBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                  <X size={20} color="#64748b" />
                 </TouchableOpacity>
               </View>
 
@@ -112,23 +117,28 @@ export const ActionBottomSheet: React.FC<ActionBottomSheetProps> = ({
                   style={[
                     styles.optionItem,
                     {
-                      borderColor: selectedAction === 'kosong' ? colors.danger : colors.border,
-                      backgroundColor: selectedAction === 'kosong' ? colors.dangerSoft : colors.bg,
+                      borderColor: selectedAction === 'kosong' ? '#ef4444' : '#e2e8f0',
+                      backgroundColor: selectedAction === 'kosong' ? '#fef2f2' : '#f8fafc',
                       opacity: isKosongAllowed ? 1 : 0.5,
                     },
                   ]}
                 >
-                  <UserX size={20} color={colors.danger} />
+                  <View style={[styles.iconWrap, { backgroundColor: '#fee2e2' }]}>
+                    <UserX size={18} color="#ef4444" />
+                  </View>
                   <View style={styles.optionContent}>
-                    <Text style={[styles.optionLabel, { color: colors.text }]}>
+                    <Text style={[styles.optionLabel, { color: '#0f172a' }]}>
                       Guru Tidak Datang (Kosong)
                     </Text>
-                    <Text style={[styles.optionHint, { color: colors.textMuted }]}>
+                    <Text style={[styles.optionHint, { color: '#64748b' }]}>
                       {isKosongAllowed
-                        ? 'Dapat dipilih karena sudah melewati 50% jam pelajaran'
-                        : `Baru bisa dipilih mulai pukul ${allowedKosongTimeStr}`}
+                        ? 'Dapat dicatat (sudah melewati 50% jam pelajaran)'
+                        : `Bisa dipilih mulai pukul ${allowedKosongTimeStr}`}
                     </Text>
                   </View>
+                  {selectedAction === 'kosong' && (
+                    <CheckCircle size={18} color="#ef4444" />
+                  )}
                 </TouchableOpacity>
 
                 {/* 2. Izin */}
@@ -138,20 +148,25 @@ export const ActionBottomSheet: React.FC<ActionBottomSheetProps> = ({
                   style={[
                     styles.optionItem,
                     {
-                      borderColor: selectedAction === 'izin' ? colors.info : colors.border,
-                      backgroundColor: selectedAction === 'izin' ? colors.infoSoft : colors.bg,
+                      borderColor: selectedAction === 'izin' ? '#0056b3' : '#e2e8f0',
+                      backgroundColor: selectedAction === 'izin' ? '#eff6ff' : '#f8fafc',
                     },
                   ]}
                 >
-                  <FileText size={20} color={colors.info} />
+                  <View style={[styles.iconWrap, { backgroundColor: '#dbeafe' }]}>
+                    <FileText size={18} color="#0056b3" />
+                  </View>
                   <View style={styles.optionContent}>
-                    <Text style={[styles.optionLabel, { color: colors.text }]}>
+                    <Text style={[styles.optionLabel, { color: '#0f172a' }]}>
                       Izin
                     </Text>
-                    <Text style={[styles.optionHint, { color: colors.textMuted }]}>
+                    <Text style={[styles.optionHint, { color: '#64748b' }]}>
                       Guru berhalangan hadir dengan surat keterangan izin
                     </Text>
                   </View>
+                  {selectedAction === 'izin' && (
+                    <CheckCircle size={18} color="#0056b3" />
+                  )}
                 </TouchableOpacity>
 
                 {/* 3. Sakit */}
@@ -161,43 +176,53 @@ export const ActionBottomSheet: React.FC<ActionBottomSheetProps> = ({
                   style={[
                     styles.optionItem,
                     {
-                      borderColor: selectedAction === 'sakit' ? colors.info : colors.border,
-                      backgroundColor: selectedAction === 'sakit' ? colors.infoSoft : colors.bg,
+                      borderColor: selectedAction === 'sakit' ? '#7c3aed' : '#e2e8f0',
+                      backgroundColor: selectedAction === 'sakit' ? '#f5f3ff' : '#f8fafc',
                     },
                   ]}
                 >
-                  <HeartPulse size={20} color={colors.info} />
+                  <View style={[styles.iconWrap, { backgroundColor: '#ede9fe' }]}>
+                    <HeartPulse size={18} color="#7c3aed" />
+                  </View>
                   <View style={styles.optionContent}>
-                    <Text style={[styles.optionLabel, { color: colors.text }]}>
+                    <Text style={[styles.optionLabel, { color: '#0f172a' }]}>
                       Sakit
                     </Text>
-                    <Text style={[styles.optionHint, { color: colors.textMuted }]}>
+                    <Text style={[styles.optionHint, { color: '#64748b' }]}>
                       Guru berhalangan hadir karena sakit
                     </Text>
                   </View>
+                  {selectedAction === 'sakit' && (
+                    <CheckCircle size={18} color="#7c3aed" />
+                  )}
                 </TouchableOpacity>
 
-                {/* 4. Dinas */}
+                {/* 4. Dinas Luar */}
                 <TouchableOpacity
                   activeOpacity={0.7}
                   onPress={() => setSelectedAction('dinas')}
                   style={[
                     styles.optionItem,
                     {
-                      borderColor: selectedAction === 'dinas' ? colors.info : colors.border,
-                      backgroundColor: selectedAction === 'dinas' ? colors.infoSoft : colors.bg,
+                      borderColor: selectedAction === 'dinas' ? '#0284c7' : '#e2e8f0',
+                      backgroundColor: selectedAction === 'dinas' ? '#f0f9ff' : '#f8fafc',
                     },
                   ]}
                 >
-                  <Briefcase size={20} color={colors.info} />
+                  <View style={[styles.iconWrap, { backgroundColor: '#e0f2fe' }]}>
+                    <Briefcase size={18} color="#0284c7" />
+                  </View>
                   <View style={styles.optionContent}>
-                    <Text style={[styles.optionLabel, { color: colors.text }]}>
-                      Dinas Luar
+                    <Text style={[styles.optionLabel, { color: '#0f172a' }]}>
+                      Tugas Dinas Luar
                     </Text>
-                    <Text style={[styles.optionHint, { color: colors.textMuted }]}>
+                    <Text style={[styles.optionHint, { color: '#64748b' }]}>
                       Tugas resmi, workshop, atau dinas luar sekolah
                     </Text>
                   </View>
+                  {selectedAction === 'dinas' && (
+                    <CheckCircle size={18} color="#0284c7" />
+                  )}
                 </TouchableOpacity>
               </View>
 
@@ -209,14 +234,14 @@ export const ActionBottomSheet: React.FC<ActionBottomSheetProps> = ({
                 <TextInput
                   value={note}
                   onChangeText={setNote}
-                  placeholder="Misal: Tugas dikirim via ketua kelas..."
-                  placeholderTextColor={colors.textMuted}
+                  placeholder="Misal: Tugas dikirimkan via ketua kelas..."
+                  placeholderTextColor="#94a3b8"
                   style={[
                     styles.textInput,
                     {
                       color: colors.text,
-                      backgroundColor: colors.bg,
-                      borderColor: colors.border,
+                      backgroundColor: '#f8fafc',
+                      borderColor: '#e2e8f0',
                     },
                   ]}
                   multiline
@@ -226,10 +251,10 @@ export const ActionBottomSheet: React.FC<ActionBottomSheetProps> = ({
 
               {/* Tombol Simpan */}
               <TouchableOpacity
-                activeOpacity={0.85}
+                activeOpacity={0.88}
                 disabled={loading}
                 onPress={handlePressSubmit}
-                style={[styles.submitButton, { backgroundColor: colors.primary }]}
+                style={[styles.submitButton, { backgroundColor: '#0056b3' }]}
               >
                 <Text style={styles.submitButtonText}>
                   {loading ? 'Menyimpan...' : 'Kirim Catatan Kehadiran'}
@@ -240,23 +265,23 @@ export const ActionBottomSheet: React.FC<ActionBottomSheetProps> = ({
               {showConfirmKosong && (
                 <View style={styles.confirmOverlay}>
                   <View style={[styles.confirmBox, { backgroundColor: colors.surface }]}>
-                    <AlertTriangle size={32} color={colors.danger} style={{ marginBottom: 12 }} />
+                    <AlertTriangle size={32} color="#dc2626" style={{ marginBottom: 12 }} />
                     <Text style={[styles.confirmTitle, { color: colors.text }]}>
                       Konfirmasi Guru Kosong
                     </Text>
                     <Text style={[styles.confirmDesc, { color: colors.textMuted }]}>
-                      Apakah Anda yakin guru bersangkutan benar-benar tidak hadir pada jam ini? Laporan ini akan langsung diteruskan ke piket & kurikulum.
+                      Apakah Anda yakin guru bersangkutan benar-benar tidak hadir pada jam ini? Laporan ini akan langsung diteruskan ke bagian kurikulum & piket.
                     </Text>
                     <View style={styles.confirmActionRow}>
                       <TouchableOpacity
                         onPress={() => setShowConfirmKosong(false)}
-                        style={[styles.confirmCancelBtn, { backgroundColor: colors.neutralSoft }]}
+                        style={styles.confirmCancelBtn}
                       >
-                        <Text style={[styles.confirmCancelText, { color: colors.text }]}>Batal</Text>
+                        <Text style={styles.confirmCancelText}>Batal</Text>
                       </TouchableOpacity>
                       <TouchableOpacity
                         onPress={handleConfirmKosong}
-                        style={[styles.confirmOkBtn, { backgroundColor: colors.danger }]}
+                        style={styles.confirmOkBtn}
                       >
                         <Text style={styles.confirmOkText}>Ya, Kosong</Text>
                       </TouchableOpacity>
@@ -275,14 +300,30 @@ export const ActionBottomSheet: React.FC<ActionBottomSheetProps> = ({
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(15, 23, 42, 0.65)',
     justifyContent: 'flex-end',
   },
   sheetContainer: {
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: Spacing.xl,
+    paddingTop: 12,
     paddingBottom: Platform.OS === 'ios' ? 36 : 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    elevation: 10,
+  },
+  handleContainer: {
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  handleBar: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#cbd5e1',
   },
   sheetHeader: {
     flexDirection: 'row',
@@ -292,11 +333,11 @@ const styles = StyleSheet.create({
   },
   sheetTitle: {
     fontFamily: Typography.fontFamily.bold,
-    fontSize: 18,
+    fontSize: 17,
   },
   sheetSubtitle: {
     fontFamily: Typography.fontFamily.medium,
-    fontSize: 13,
+    fontSize: 12,
     marginTop: 2,
   },
   closeBtn: {
@@ -304,61 +345,73 @@ const styles = StyleSheet.create({
   },
   optionsList: {
     gap: 8,
-    marginVertical: Spacing.sm,
+    marginVertical: Spacing.xs,
   },
   optionItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
+    padding: 11,
     borderRadius: Radius.card,
-    borderWidth: 1.5,
-    gap: 12,
+    borderWidth: 1.2,
+    gap: 10,
+  },
+  iconWrap: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   optionContent: {
     flex: 1,
   },
   optionLabel: {
-    fontFamily: Typography.fontFamily.semiBold,
-    fontSize: 14,
+    fontFamily: Typography.fontFamily.bold,
+    fontSize: 13,
   },
   optionHint: {
     fontFamily: Typography.fontFamily.regular,
     fontSize: 11,
-    marginTop: 2,
+    marginTop: 1,
   },
   inputContainer: {
-    marginTop: Spacing.md,
+    marginTop: Spacing.sm,
   },
   inputLabel: {
-    fontFamily: Typography.fontFamily.medium,
-    fontSize: 13,
-    marginBottom: 6,
+    fontFamily: Typography.fontFamily.semiBold,
+    fontSize: 12,
+    marginBottom: 5,
   },
   textInput: {
     borderWidth: 1,
     borderRadius: Radius.input,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    fontSize: 13,
+    fontSize: 12,
     fontFamily: Typography.fontFamily.regular,
-    minHeight: 52,
+    minHeight: 48,
     textAlignVertical: 'top',
   },
   submitButton: {
-    height: 52,
+    height: 46,
     borderRadius: Radius.button,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: Spacing.lg,
+    marginTop: Spacing.md,
+    shadowColor: '#0056b3',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.22,
+    shadowRadius: 6,
+    elevation: 3,
   },
   submitButtonText: {
     color: '#FFFFFF',
     fontFamily: Typography.fontFamily.bold,
-    fontSize: 15,
+    fontSize: 14,
   },
   confirmOverlay: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(0,0,0,0.7)',
+    backgroundColor: 'rgba(15, 23, 42, 0.75)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: Spacing.xl,
@@ -377,38 +430,41 @@ const styles = StyleSheet.create({
   },
   confirmDesc: {
     fontFamily: Typography.fontFamily.regular,
-    fontSize: 13,
+    fontSize: 12,
     textAlign: 'center',
     marginVertical: 12,
     lineHeight: 18,
   },
   confirmActionRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 10,
     width: '100%',
-    marginTop: 8,
+    marginTop: 6,
   },
   confirmCancelBtn: {
     flex: 1,
-    height: 44,
+    height: 42,
     borderRadius: Radius.button,
+    backgroundColor: '#f1f5f9',
     alignItems: 'center',
     justifyContent: 'center',
   },
   confirmCancelText: {
-    fontFamily: Typography.fontFamily.semiBold,
-    fontSize: 14,
+    fontFamily: Typography.fontFamily.bold,
+    fontSize: 13,
+    color: '#475569',
   },
   confirmOkBtn: {
     flex: 1,
-    height: 44,
+    height: 42,
     borderRadius: Radius.button,
+    backgroundColor: '#dc2626',
     alignItems: 'center',
     justifyContent: 'center',
   },
   confirmOkText: {
     color: '#FFFFFF',
     fontFamily: Typography.fontFamily.bold,
-    fontSize: 14,
+    fontSize: 13,
   },
 });
