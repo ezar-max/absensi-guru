@@ -180,13 +180,6 @@ export default function HistoryScreen() {
               const prevItem = items[index - 1];
               const showDateHeader = !prevItem || prevItem.date !== item.date;
 
-              let accentBorderColor = '#10b981';
-              if (item.status === 'terlambat') accentBorderColor = '#f59e0b';
-              else if (item.status === 'kosong') accentBorderColor = '#ef4444';
-              else if (item.status === 'izin' || item.status === 'sakit' || item.status === 'dinas') {
-                accentBorderColor = '#6366f1';
-              }
-
               return (
                 <View>
                   {showDateHeader && (
@@ -199,9 +192,6 @@ export default function HistoryScreen() {
                   )}
 
                   <View style={styles.historyCard}>
-                    {/* Accent strip */}
-                    <View style={[styles.accentStrip, { backgroundColor: accentBorderColor }]} />
-
                     <View style={styles.cardInner}>
                       <View style={styles.cardHeaderRow}>
                         <View style={styles.timeTag}>
@@ -345,16 +335,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     position: 'relative',
   },
-  accentStrip: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 4,
-  },
   cardInner: {
     padding: 14,
-    paddingLeft: 18,
   },
   cardHeaderRow: {
     flexDirection: 'row',

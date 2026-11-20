@@ -84,26 +84,6 @@ export const SlotCard: React.FC<SlotCardProps> = ({
 
   const isHighlighted = isOngoing && !hasAttendance;
 
-  // Warna aksen bar di sebelah kiri kartu
-  let accentColor = '#cbd5e1';
-  if (isHighlighted) accentColor = '#0284c7';
-  else if (hasAttendance) {
-    switch (slot.attendance?.status) {
-      case 'hadir':
-        accentColor = '#10b981';
-        break;
-      case 'terlambat':
-        accentColor = '#f59e0b';
-        break;
-      case 'kosong':
-        accentColor = '#ef4444';
-        break;
-      default:
-        accentColor = '#6366f1';
-        break;
-    }
-  }
-
   return (
     <View
       style={[
@@ -115,9 +95,6 @@ export const SlotCard: React.FC<SlotCardProps> = ({
         },
       ]}
     >
-      {/* Aksen strip di sebelah kiri */}
-      <View style={[styles.accentStrip, { backgroundColor: accentColor }]} />
-
       <View style={styles.cardInner}>
         {/* Header Kartu: Jam, Periode & Status */}
         <View style={styles.headerRow}>
@@ -256,16 +233,8 @@ const styles = StyleSheet.create({
     position: 'relative',
     overflow: 'hidden',
   },
-  accentStrip: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 4.5,
-  },
   cardInner: {
     padding: Spacing.lg,
-    paddingLeft: Spacing.lg + 4,
   },
   headerRow: {
     flexDirection: 'row',

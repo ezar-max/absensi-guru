@@ -284,22 +284,22 @@ export default function TodayScreen() {
 
         {/* Row 3: Ringkasan Status Kehadiran Hari Ini (KPI Cards) */}
         <View style={styles.statsRow}>
-          <View style={[styles.statCard, { borderLeftColor: '#0056b3' }]}>
+          <View style={styles.statCard}>
             <Text style={styles.statNumber}>{stats.total}</Text>
             <Text style={styles.statLabel}>Total Jam</Text>
           </View>
 
-          <View style={[styles.statCard, { borderLeftColor: '#10b981' }]}>
+          <View style={styles.statCard}>
             <Text style={[styles.statNumber, { color: '#059669' }]}>{stats.hadir}</Text>
             <Text style={styles.statLabel}>Hadir</Text>
           </View>
 
-          <View style={[styles.statCard, { borderLeftColor: '#f59e0b' }]}>
+          <View style={styles.statCard}>
             <Text style={[styles.statNumber, { color: '#d97706' }]}>{stats.terlambat}</Text>
             <Text style={styles.statLabel}>Terlambat</Text>
           </View>
 
-          <View style={[styles.statCard, { borderLeftColor: '#ef4444' }]}>
+          <View style={styles.statCard}>
             <Text style={[styles.statNumber, { color: '#dc2626' }]}>{stats.kosong}</Text>
             <Text style={styles.statLabel}>Kosong</Text>
           </View>
@@ -532,13 +532,12 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#ffffff',
     borderRadius: 10,
     paddingVertical: 8,
     paddingHorizontal: 10,
-    borderLeftWidth: 3.5,
     borderWidth: 1,
-    borderColor: '#f1f5f9',
+    borderColor: '#e2e8f0',
   },
   statNumber: {
     fontFamily: Typography.fontFamily.bold,
