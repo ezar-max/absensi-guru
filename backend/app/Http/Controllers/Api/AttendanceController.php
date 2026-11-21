@@ -41,7 +41,7 @@ class AttendanceController extends Controller
                 'subject:id,name',
                 'teacher:id,name',
                 'attendances' => function ($q) use ($todayDate) {
-                    $q->where('date', $todayDate);
+                    $q->whereDate('date', $todayDate);
                 },
             ])
             ->join('periods', 'schedules.period_id', '=', 'periods.id')

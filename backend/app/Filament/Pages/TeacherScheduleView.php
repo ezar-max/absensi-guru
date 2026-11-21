@@ -9,6 +9,7 @@ use Filament\Pages\Page;
 
 class TeacherScheduleView extends Page
 {
+    protected static bool $shouldRegisterNavigation = false;
     protected static ?string $navigationIcon = 'heroicon-o-briefcase';
     protected static ?string $navigationGroup = 'Jadwal';
     protected static ?string $navigationLabel = 'Jadwal per Guru';

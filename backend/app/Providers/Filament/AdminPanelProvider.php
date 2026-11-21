@@ -50,7 +50,6 @@ class AdminPanelProvider extends PanelProvider
             ->navigationGroups([
                 'Beranda',
                 'Data Master',
-                'Jadwal',
                 'Absensi',
                 'Sistem',
             ])

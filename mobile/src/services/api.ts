@@ -1,7 +1,7 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
-const DEFAULT_API_URL = 'http://192.168.1.8:8000/api';
+const DEFAULT_API_URL = 'http://192.168.18.106:8000/api';
 
 let initialUrl = process.env.EXPO_PUBLIC_API_URL || DEFAULT_API_URL;
 // Otomatis arahkan ke IP laptop jika bundle masih berisi 10.0.2.2 (loopback emulator)
@@ -29,7 +29,11 @@ api.interceptors.request.use(async (config) => {
   try {
     const customUrl = await SecureStore.getItemAsync(SERVER_URL_KEY);
     if (customUrl && customUrl.trim().length > 0) {
-      config.baseURL = customUrl.trim();
+      let serverUrl = customUrl.trim();
+      if (!/\/api\/?$/.test(serverUrl)) {
+        serverUrl = serverUrl.replace(/\/+$/, '') + '/api';
+      }
+      config.baseURL = serverUrl;
     } else {
       config.baseURL = API_BASE_URL;
     }

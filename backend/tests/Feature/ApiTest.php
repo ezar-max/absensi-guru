@@ -193,6 +193,7 @@ class ApiTest extends TestCase
         $this->assertEquals($this->schedule->id, $response->json('data.0.schedule_id'));
     }
 
+
     public function test_store_attendance_via_api(): void
     {
         Carbon::setTestNow(Carbon::parse('2026-11-20 07:05:00')); // Jumat

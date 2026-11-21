@@ -65,7 +65,26 @@ php artisan serve --host=0.0.0.0 --port=8000
    cd ../mobile
    npx expo start
    ```
-6. Buka aplikasi **Expo Go** di HP dan scan QR code yang muncul di terminal.
+6. Untuk pengembangan UI, buka **Expo Go** dan scan QR code. Push notification Android tidak tersedia di Expo Go; gunakan development build.
+
+### Konfigurasi Firebase Cloud Messaging (Android)
+
+1. Buat atau pilih proyek Firebase, daftarkan aplikasi Android dengan package `com.sekolah.absensiguru`, lalu unduh `google-services.json` ke folder `mobile/`. File ini berisi konfigurasi aplikasi Firebase, bukan private key server.
+2. Setelah file tersedia, tambahkan `"googleServicesFile": "./google-services.json"` pada bagian `expo.android` di `mobile/app.json`.
+3. Aktifkan **Firebase Cloud Messaging API** di Google Cloud untuk proyek tersebut.
+4. Buat service account server dengan izin **Firebase Cloud Messaging API Admin**. Simpan JSON key di luar web root, misalnya `backend/storage/app/private/firebase-service-account.json`. Jangan commit file private key.
+5. Atur `.env` backend:
+   ```env
+   FCM_PROJECT_ID=id-proyek-firebase
+   FCM_CREDENTIALS=storage/app/private/firebase-service-account.json
+   ```
+6. Migrasikan tabel token perangkat:
+   ```bash
+   cd backend
+   php artisan migrate
+   ```
+7. Build dan instal development build atau APK preview. Setelah sekretaris login dan memberi izin notifikasi, token perangkat akan terdaftar otomatis. Admin dapat mengirim push melalui aksi **Kirim Pengingat Penilaian** di halaman akun sekretaris.
+8. Kanal push dibuat tanpa suara. Untuk menerima push, perangkat harus online dan menggunakan build native; Expo Go Android tidak mendukung push remote.
 
 ---
 
@@ -124,13 +143,14 @@ Untuk menghasilkan file installer APK mandiri (*standalone*) yang dapat dibagika
    ```env
    EXPO_PUBLIC_API_URL=https://absensi.sekolah.sch.id/api
    ```
-4. Jalankan perintah build APK:
+4. Pastikan `google-services.json` tersedia di `mobile/` dan sudah direferensikan dari `expo.android.googleServicesFile` sebelum build.
+5. Jalankan perintah build APK:
    ```bash
    cd mobile
-   eas build -p android --profile preview
+   npx eas-cli@latest build -p android --profile preview
    ```
-5. Setelah build cloud selesai, terminal akan memberikan link download file `.apk`.
-6. Unduh file APK tersebut dan bagikan ke HP para sekretaris kelas.
+6. Setelah build cloud selesai, terminal akan memberikan link download file `.apk`.
+7. Unduh file APK tersebut dan bagikan ke HP para sekretaris kelas.
 
 ---
 

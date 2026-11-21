@@ -18,7 +18,9 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ title, message, icon }) 
       {icon ? (
         <View style={styles.iconContainer}>{icon}</View>
       ) : (
-        <CalendarX2 size={48} color={colors.neutral} style={styles.iconContainer} />
+        <View style={[styles.iconContainer, { backgroundColor: colors.primarySoft }]}>
+          <CalendarX2 size={42} color={colors.primary} />
+        </View>
       )}
       <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
       {message && <Text style={[styles.message, { color: colors.textMuted }]}>{message}</Text>}
@@ -34,7 +36,12 @@ const styles = StyleSheet.create({
     marginVertical: Spacing.xl,
   },
   iconContainer: {
-    marginBottom: Spacing.md,
+    width: 84,
+    height: 84,
+    borderRadius: 42,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.lg,
   },
   title: {
     fontFamily: Typography.fontFamily.bold,

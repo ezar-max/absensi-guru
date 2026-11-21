@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,8 +6,6 @@ import {
   StyleSheet,
   Alert,
   ScrollView,
-  TextInput,
-  Modal,
   ActivityIndicator,
   Image,
 } from 'react-native';
@@ -15,67 +13,19 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   User,
   LogOut,
-  Sun,
-  Moon,
-  Smartphone,
   Shield,
   BookOpen,
-  Server,
-  X,
-  CheckCircle2,
-  AlertCircle,
-  RefreshCw,
-  ExternalLink,
 } from 'lucide-react-native';
-import * as SecureStore from 'expo-secure-store';
-import axios from 'axios';
 import { useAuth } from '../../src/context/AuthContext';
 import { useTheme } from '../../src/context/ThemeContext';
 import { Radius, Spacing, Typography } from '../../src/constants/theme';
-import { SERVER_URL_KEY, API_BASE_URL } from '../../src/services/api';
 
 export default function ProfileScreen() {
   const { user, classes, logout } = useAuth();
-  const { mode, setMode, colors } = useTheme();
+  const { colors } = useTheme();
 
   const [loggingOut, setLoggingOut] = useState(false);
 
-  // Server Modal State
-  const [serverModalVisible, setServerModalVisible] = useState(false);
-  const [serverUrlInput, setServerUrlInput] = useState(API_BASE_URL);
-  const [activeServerUrl, setActiveServerUrl] = useState(API_BASE_URL);
-  const [testStatus, setTestStatus] = useState<{ loading: boolean; success?: boolean; message?: string } | null>(null);
-
-  useEffect(() => {
-    SecureStore.getItemAsync(SERVER_URL_KEY).then((saved) => {
-      if (saved) {
-        setServerUrlInput(saved);
-        setActiveServerUrl(saved);
-      }
-    });
-  }, []);
-
-  const handleTestConnection = async () => {
-    const target = serverUrlInput.trim().replace(/\/+$/, '');
-    setTestStatus({ loading: true });
-    try {
-      const res = await axios.get(`${target}/today`, { timeout: 4000 });
-      setTestStatus({ loading: false, success: true, message: `Terhubung! (Status: ${res.status})` });
-    } catch (e: any) {
-      if (e.response) {
-        setTestStatus({ loading: false, success: true, message: `Terhubung ke Laravel API! (Status: ${e.response.status})` });
-      } else {
-        setTestStatus({ loading: false, success: false, message: e.message || 'Koneksi gagal / timeout' });
-      }
-    }
-  };
-
-  const handleSaveServerUrl = async () => {
-    const target = serverUrlInput.trim().replace(/\/+$/, '');
-    await SecureStore.setItemAsync(SERVER_URL_KEY, target);
-    setActiveServerUrl(target);
-    setServerModalVisible(false);
-  };
 
   const handleLogout = () => {
     Alert.alert(
@@ -109,12 +59,17 @@ export default function ProfileScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Header Title */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Profil & Pengaturan</Text>
-          <Text style={styles.headerSubtitle}>Kelola akun sekretaris dan preferensi aplikasi</Text>
+          <View style={styles.aiLabel}>
+            <View style={styles.aiDot} />
+            <Text style={styles.aiLabelText}>PERSONAL CONTROL</Text>
+          </View>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Profil & Pengaturan</Text>
+          <Text style={[styles.headerSubtitle, { color: colors.textMuted }]}>Kelola akun sekretaris dan preferensi aplikasi</Text>
         </View>
 
         {/* Profil Sekretaris Card */}
         <View style={styles.profileCard}>
+          <View style={styles.profileAccent} />
           <View style={styles.avatarCircle}>
             <Text style={styles.avatarInitials}>{initials}</Text>
           </View>
@@ -155,66 +110,6 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* Pengaturan Koneksi Server Backend */}
-        <View style={styles.sectionCard}>
-          <View style={styles.sectionHeaderRow}>
-            <Server size={16} color="#0056b3" style={{ marginRight: 6 }} />
-            <Text style={styles.sectionTitle}>Koneksi Server Backend</Text>
-          </View>
-
-          <View style={styles.serverInfoBox}>
-            <Text style={styles.serverInfoLabel}>URL API Aktif:</Text>
-            <Text style={styles.serverInfoUrl} numberOfLines={1}>{activeServerUrl}</Text>
-          </View>
-
-          <TouchableOpacity
-            onPress={() => {
-              setTestStatus(null);
-              setServerModalVisible(true);
-            }}
-            style={styles.serverConfigBtn}
-          >
-            <Text style={styles.serverConfigBtnText}>Ubah / Tes Koneksi Server</Text>
-            <ExternalLink size={14} color="#0056b3" />
-          </TouchableOpacity>
-        </View>
-
-        {/* Pilihan Tema */}
-        <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>Pilihan Tema Tampilan</Text>
-          <View style={styles.themeOptionsRow}>
-            <TouchableOpacity
-              onPress={() => setMode('system')}
-              style={[styles.themeBtn, mode === 'system' && styles.themeBtnActive]}
-            >
-              <Smartphone size={16} color={mode === 'system' ? '#0056b3' : '#64748b'} />
-              <Text style={[styles.themeBtnText, mode === 'system' && styles.themeBtnTextActive]}>
-                Sistem
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => setMode('light')}
-              style={[styles.themeBtn, mode === 'light' && styles.themeBtnActive]}
-            >
-              <Sun size={16} color={mode === 'light' ? '#0056b3' : '#64748b'} />
-              <Text style={[styles.themeBtnText, mode === 'light' && styles.themeBtnTextActive]}>
-                Terang
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => setMode('dark')}
-              style={[styles.themeBtn, mode === 'dark' && styles.themeBtnActive]}
-            >
-              <Moon size={16} color={mode === 'dark' ? '#0056b3' : '#64748b'} />
-              <Text style={[styles.themeBtnText, mode === 'dark' && styles.themeBtnTextActive]}>
-                Gelap
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
         {/* Tentang Aplikasi & Sekolah */}
         <View style={styles.aboutCard}>
           <Image
@@ -246,91 +141,6 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </ScrollView>
 
-      {/* Modal Pengaturan Server */}
-      <Modal
-        visible={serverModalVisible}
-        animationType="fade"
-        transparent={true}
-        onRequestClose={() => setServerModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <View style={styles.modalHeader}>
-              <View style={styles.modalTitleRow}>
-                <Server size={18} color="#0056b3" style={{ marginRight: 8 }} />
-                <Text style={styles.modalTitle}>Alamat Server Backend</Text>
-              </View>
-              <TouchableOpacity onPress={() => setServerModalVisible(false)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                <X size={20} color="#64748b" />
-              </TouchableOpacity>
-            </View>
-
-            <Text style={styles.modalSubtitle}>
-              Masukkan URL API Laravel di laptop Anda. Pastikan HP dan laptop terhubung ke Wi-Fi yang sama.
-            </Text>
-
-            <View style={styles.serverInputContainer}>
-              <TextInput
-                value={serverUrlInput}
-                onChangeText={setServerUrlInput}
-                placeholder="http://192.168.1.8:8000/api"
-                placeholderTextColor="#94a3b8"
-                autoCapitalize="none"
-                autoCorrect={false}
-                style={styles.serverTextInput}
-              />
-            </View>
-
-            <View style={styles.presetContainer}>
-              <TouchableOpacity
-                onPress={() => setServerUrlInput('http://192.168.1.8:8000/api')}
-                style={styles.presetChip}
-              >
-                <Text style={styles.presetChipText}>Wi-Fi Laptop (192.168.1.8)</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => setServerUrlInput('http://10.0.2.2:8000/api')}
-                style={styles.presetChip}
-              >
-                <Text style={styles.presetChipText}>Emulator (10.0.2.2)</Text>
-              </TouchableOpacity>
-            </View>
-
-            {testStatus && (
-              <View style={[styles.testStatusBox, testStatus.success ? styles.testStatusSuccess : styles.testStatusFail]}>
-                {testStatus.loading ? (
-                  <ActivityIndicator size="small" color="#0056b3" />
-                ) : testStatus.success ? (
-                  <CheckCircle2 size={16} color="#16a34a" style={{ marginRight: 6 }} />
-                ) : (
-                  <AlertCircle size={16} color="#dc2626" style={{ marginRight: 6 }} />
-                )}
-                <Text style={[styles.testStatusText, testStatus.success ? styles.testTextSuccess : styles.testTextFail]}>
-                  {testStatus.loading ? 'Sedang mengetes koneksi...' : testStatus.message}
-                </Text>
-              </View>
-            )}
-
-            <View style={styles.modalActions}>
-              <TouchableOpacity
-                onPress={handleTestConnection}
-                disabled={testStatus?.loading}
-                style={styles.testButton}
-              >
-                <RefreshCw size={14} color="#0056b3" style={{ marginRight: 6 }} />
-                <Text style={styles.testButtonText}>Tes Koneksi</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={handleSaveServerUrl}
-                style={styles.saveButton}
-              >
-                <Text style={styles.saveButtonText}>Simpan</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 }
@@ -341,10 +151,28 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 92,
   },
   header: {
     marginBottom: 16,
+  },
+  aiLabel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  aiDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#22d3ee',
+    marginRight: 6,
+  },
+  aiLabelText: {
+    fontFamily: Typography.fontFamily.bold,
+    fontSize: 9,
+    letterSpacing: 1.1,
+    color: '#0891b2',
   },
   headerTitle: {
     fontFamily: Typography.fontFamily.bold,
@@ -364,12 +192,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#f1f5f9',
+    borderColor: '#e5edf8',
+    overflow: 'hidden',
     shadowColor: '#0f172a',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.03,
     shadowRadius: 8,
     elevation: 2,
+  },
+  profileAccent: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 58,
+    backgroundColor: '#eaf2ff',
   },
   avatarCircle: {
     width: 64,

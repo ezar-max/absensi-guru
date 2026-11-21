@@ -1,6 +1,8 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { AppState } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { api, setUnauthorizedCallback, TOKEN_KEY, USER_KEY, CLASSES_KEY } from '../services/api';
+import { registerPushDevice, unregisterPushDevice } from '../services/pushNotifications';
 
 export interface User {
   id: number;
@@ -38,11 +40,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [classes, setClasses] = useState<SchoolClass[]>([]);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const logoutInProgress = useRef(false);
 
   const logout = async () => {
+    if (logoutInProgress.current) return;
+    logoutInProgress.current = true;
+
     try {
       if (token) {
-        await api.post('/logout').catch(() => {});
+        try {
+          await unregisterPushDevice();
+        } catch (error) {
+          console.error('Gagal menghapus perangkat dari pengingat push:', error);
+        }
+        await api.post('/logout').catch((error) => {
+          console.error('Gagal mencabut sesi di server:', error);
+        });
       }
     } finally {
       await SecureStore.deleteItemAsync(TOKEN_KEY).catch(() => {});
@@ -51,12 +64,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(null);
       setClasses([]);
       setToken(null);
+      logoutInProgress.current = false;
     }
   };
 
   useEffect(() => {
     setUnauthorizedCallback(logout);
   }, [token]);
+
+  useEffect(() => {
+    if (!user || !token) return;
+
+    const registerDevice = () => {
+      void registerPushDevice().catch((error) => {
+        console.error('Gagal mendaftarkan perangkat untuk pengingat push:', error);
+      });
+    };
+
+    registerDevice();
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') registerDevice();
+    });
+
+    return () => subscription.remove();
+  }, [user?.id, token]);
 
   useEffect(() => {
     const loadStoredAuth = async () => {

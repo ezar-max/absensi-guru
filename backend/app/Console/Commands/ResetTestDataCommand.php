@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 
 class ResetTestDataCommand extends Command
 {
@@ -31,14 +32,22 @@ class ResetTestDataCommand extends Command
     {
         $this->info('Memulai pengosongan data pengujian...');
 
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        $driver = DB::getDriverName();
+        if ($driver === 'sqlite') {
+            DB::statement('PRAGMA foreign_keys = OFF;');
+        } else {
+            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        }
 
         // 1. Truncate tabel operasional & transaksi
         $tablesToTruncate = [
             'attendances',
             'audit_logs',
+            'teacher_evaluations',
+            'attendance_reminders',
             'schedules',
             'class_user',
+            'subject_teacher',
             'holidays',
             'personal_access_tokens',
             'teachers',
@@ -48,8 +57,14 @@ class ResetTestDataCommand extends Command
         ];
 
         foreach ($tablesToTruncate as $table) {
-            DB::table($table)->truncate();
-            $this->line("  ✓ Tabel [{$table}] telah dikosongkan.");
+            if (Schema::hasTable($table)) {
+                if ($driver === 'sqlite') {
+                    DB::table($table)->delete();
+                } else {
+                    DB::table($table)->truncate();
+                }
+                $this->line("  ✓ Tabel [{$table}] telah dikosongkan.");
+            }
         }
 
         // 2. Bersihkan user sekretaris, pertahankan / perbarui akun admin
@@ -73,7 +88,11 @@ class ResetTestDataCommand extends Command
         Setting::set('edit_lock_min', 15);
         $this->line('  ✓ Parameter kebijakan absensi diset ke nilai default.');
 
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        if ($driver === 'sqlite') {
+            DB::statement('PRAGMA foreign_keys = ON;');
+        } else {
+            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        }
 
         if ($this->option('seed')) {
             $this->info('Menjalankan seeder ulang...');

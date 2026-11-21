@@ -20,9 +20,11 @@ import { api } from '../../src/services/api';
 interface HistoryItem {
   id: number;
   date: string;
-  status: StatusType;
-  arrived_at: string | null;
-  late_minutes: number;
+  type?: 'penilaian';
+  status?: StatusType;
+  rating_label?: string;
+  arrived_at?: string | null;
+  late_minutes?: number;
   note: string | null;
   class: string;
   period: string;
@@ -58,15 +60,26 @@ export default function HistoryScreen() {
 
       const res = await api.get(url);
       const { data, last_page } = res.data;
+      let combinedData = data;
+      let combinedLastPage = last_page;
+
+      if (filter === 'all') {
+        const ratingRes = await api.get(`/teacher-ratings/history?page=${pageNumber}`);
+        combinedData = [...data, ...ratingRes.data.data].sort((a: HistoryItem, b: HistoryItem) => {
+          const dateCompare = b.date.localeCompare(a.date);
+          return dateCompare !== 0 ? dateCompare : b.id - a.id;
+        });
+        combinedLastPage = Math.max(last_page, ratingRes.data.last_page);
+      }
 
       if (pageNumber === 1) {
-        setItems(data);
+        setItems(combinedData);
       } else {
-        setItems((prev) => [...prev, ...data]);
+        setItems((prev) => [...prev, ...combinedData]);
       }
 
       setPage(pageNumber);
-      setLastPage(last_page);
+      setLastPage(combinedLastPage);
     } catch (e) {
       console.error('Gagal mengambil data riwayat:', e);
     } finally {
@@ -104,9 +117,13 @@ export default function HistoryScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.bg }]}>
       {/* Header Elegan */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Riwayat Absensi</Text>
-        <Text style={styles.headerSubtitle}>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+        <View style={styles.aiLabel}>
+          <View style={styles.aiDot} />
+          <Text style={styles.aiLabelText}>SMART HISTORY</Text>
+        </View>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Riwayat Absensi</Text>
+        <Text style={[styles.headerSubtitle, { color: colors.textMuted }]}>
           Catatan kehadiran guru kelas Anda dari hari ke hari
         </Text>
 
@@ -200,7 +217,13 @@ export default function HistoryScreen() {
                             {item.start} - {item.end} ({item.period})
                           </Text>
                         </View>
-                        <StatusChip status={item.status} lateMinutes={item.late_minutes} />
+                        {item.type === 'penilaian' ? (
+                          <View style={styles.ratingTag}>
+                            <Text style={styles.ratingTagText}>{item.rating_label}</Text>
+                          </View>
+                        ) : (
+                          <StatusChip status={item.status as StatusType} lateMinutes={item.late_minutes ?? 0} />
+                        )}
                       </View>
 
                       <Text style={styles.subjectText}>{item.subject}</Text>
@@ -256,6 +279,25 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 2,
   },
+  aiLabel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    marginBottom: 4,
+  },
+  aiDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#22d3ee',
+    marginRight: 6,
+  },
+  aiLabelText: {
+    fontFamily: Typography.fontFamily.bold,
+    fontSize: 9,
+    letterSpacing: 1.1,
+    color: '#0891b2',
+  },
   headerTitle: {
     fontFamily: Typography.fontFamily.bold,
     fontSize: 20,
@@ -306,7 +348,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: Spacing.lg,
-    paddingBottom: Spacing.xxl,
+    paddingBottom: 92,
   },
   dateHeaderRow: {
     flexDirection: 'row',
@@ -356,6 +398,19 @@ const styles = StyleSheet.create({
     fontFamily: Typography.fontFamily.medium,
     fontSize: 11,
     color: '#0056b3',
+  },
+  ratingTag: {
+    backgroundColor: '#ede9fe',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#ddd6fe',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  ratingTagText: {
+    fontFamily: Typography.fontFamily.bold,
+    fontSize: 11,
+    color: '#6d28d9',
   },
   subjectText: {
     fontFamily: Typography.fontFamily.bold,

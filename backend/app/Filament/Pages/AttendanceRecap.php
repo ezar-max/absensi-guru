@@ -2,9 +2,8 @@
 
 namespace App\Filament\Pages;
 
-use App\Exports\TeacherRecapExport;
-use App\Models\SchoolClass;
-use App\Models\Teacher;
+use App\Exports\TeacherRatingRecapExport;
+use App\Models\TeacherEvaluation;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Filament\Pages\Page;
@@ -22,8 +21,8 @@ class AttendanceRecap extends Page
 
     public int $month;
     public int $year;
-    public string $viewMode = 'teacher'; // 'teacher' | 'class'
     public string $search = '';
+    public ?int $selectedEvaluationId = null;
 
     public function mount(): void
     {
@@ -51,15 +50,15 @@ class AttendanceRecap extends Page
 
     public function exportExcel(): BinaryFileResponse
     {
-        $fileName = "rekap-absensi-guru-{$this->year}-{$this->month}.xlsx";
-        return Excel::download(new TeacherRecapExport($this->month, $this->year), $fileName);
+        $fileName = "rekap-kehadiran-guru-{$this->year}-{$this->month}.xlsx";
+
+        return Excel::download(new TeacherRatingRecapExport($this->month, $this->year), $fileName);
     }
 
     public function exportPdf()
     {
         $monthName = Carbon::create($this->year, $this->month, 1)->translatedFormat('F Y');
-        $items = (new TeacherRecapExport($this->month, $this->year))->collection()->toArray();
-
+        $items = (new TeacherRatingRecapExport($this->month, $this->year))->collection()->toArray();
         $pdf = Pdf::loadView('exports.recap-pdf', [
             'monthName' => $monthName,
             'items' => $items,
@@ -67,139 +66,132 @@ class AttendanceRecap extends Page
 
         return response()->streamDownload(
             fn () => print($pdf->output()),
-            "rekap-absensi-guru-{$this->year}-{$this->month}.pdf"
+            "rekap-kehadiran-guru-{$this->year}-{$this->month}.pdf"
         );
+    }
+
+    public function showDetails(int $evaluationId): void
+    {
+        abort_unless(
+            TeacherEvaluation::query()
+                ->whereKey($evaluationId)
+                ->whereBetween('date', $this->dateRange())
+                ->exists(),
+            404
+        );
+
+        $this->selectedEvaluationId = $evaluationId;
+    }
+
+    public function closeDetails(): void
+    {
+        $this->selectedEvaluationId = null;
     }
 
     public function getViewData(): array
     {
-        $startDate = Carbon::create($this->year, $this->month, 1)->startOfMonth()->toDateString();
-        $endDate = Carbon::create($this->year, $this->month, 1)->endOfMonth()->toDateString();
-        $carbonStart = Carbon::create($this->year, $this->month, 1)->startOfMonth();
-        $carbonEnd = Carbon::create($this->year, $this->month, 1)->endOfMonth();
+        [$startDate, $endDate] = $this->dateRange();
+        $evaluations = TeacherEvaluation::query()
+            ->with([
+                'schoolClass:id,name,major',
+                'period:id,label,start_time,end_time',
+                'subject:id,name',
+                'teacher:id,name,nip',
+                'recordedBy:id,name',
+            ])
+            ->whereBetween('date', [$startDate, $endDate])
+            ->orderByDesc('date')
+            ->orderByDesc('id')
+            ->get();
 
-        // Data Guru
-        $teachersQuery = Teacher::with(['schedules.attendances' => function ($q) use ($startDate, $endDate) {
-            $q->whereBetween('date', [$startDate, $endDate]);
-        }])->orderBy('name');
+        $ratingLabels = collect(TeacherEvaluation::RATINGS)->pluck('label', 'value');
+        $teacherSummaries = $evaluations
+            ->groupBy('teacher_id')
+            ->map(function ($teacherEvaluations) use ($ratingLabels) {
+                $teacher = $teacherEvaluations->first()->teacher;
+                $ratingCounts = $ratingLabels
+                    ->keys()
+                    ->mapWithKeys(fn (string $rating) => [
+                        $rating => $teacherEvaluations->where('rating', $rating)->count(),
+                    ]);
 
-        $teachers = $teachersQuery->get();
+                return [
+                    'teacher' => $teacher?->name ?? '-',
+                    'total' => $teacherEvaluations->count(),
+                    'rating_counts' => $ratingCounts,
+                    'kurang_count' => $ratingCounts['kurang'] ?? 0,
+                ];
+            })
+            ->sortBy('teacher')
+            ->sortByDesc('kurang_count')
+            ->values();
+        $attentionTeachers = $teacherSummaries
+            ->filter(fn (array $summary) => $summary['kurang_count'] > 0)
+            ->values();
 
-        $teacherRows = $teachers->map(function (Teacher $teacher) {
-            $attendances = $teacher->schedules->flatMap->attendances;
-            $total = $attendances->count();
-            $hadir = $attendances->where('status', 'hadir')->count();
-            $terlambat = $attendances->where('status', 'terlambat')->count();
-            $kosong = $attendances->where('status', 'kosong')->count();
-            $izin = $attendances->where('status', 'izin')->count();
-            $sakit = $attendances->where('status', 'sakit')->count();
-            $dinas = $attendances->where('status', 'dinas')->count();
-            $totalLateMin = $attendances->sum('late_minutes');
-            $pct = $total > 0 ? round((($hadir + $terlambat) / $total) * 100, 1) : 0;
+        $rows = $evaluations->map(fn (TeacherEvaluation $evaluation) => [
+            'id' => $evaluation->id,
+            'date' => $evaluation->date->toDateString(),
+            'class' => $evaluation->schoolClass?->name ?? '-',
+            'major' => $evaluation->schoolClass?->major ?? '-',
+            'period' => $evaluation->period?->label ?? '-',
+            'subject' => $evaluation->subject?->name ?? '-',
+            'teacher' => $evaluation->teacher?->name ?? '-',
+            'teacher_presence' => $evaluation->teacher_present === null
+                ? 'Belum dicatat'
+                : ($evaluation->teacher_present ? 'Guru masuk' : 'Guru tidak masuk'),
+            'teacher_present' => $evaluation->teacher_present,
+            'rating' => $ratingLabels[$evaluation->rating] ?? $evaluation->rating,
+            'note' => $evaluation->note,
+            'recorded_by' => $evaluation->recordedBy?->name ?? '-',
+        ]);
 
-            // Generate avatar initials
-            $words = explode(' ', trim($teacher->name));
-            $initials = '';
-            foreach (array_slice($words, 0, 2) as $w) {
-                $initials .= strtoupper(substr($w, 0, 1));
-            }
-            if (empty($initials)) {
-                $initials = 'G';
-            }
-
-            return [
-                'id' => $teacher->id,
-                'name' => $teacher->name,
-                'initials' => $initials,
-                'nip' => $teacher->nip ?? '-',
-                'total_slot' => $total,
-                'hadir' => $hadir,
-                'terlambat' => $terlambat,
-                'kosong' => $kosong,
-                'izin' => $izin,
-                'sakit' => $sakit,
-                'dinas' => $dinas,
-                'total_late_minutes' => $totalLateMin,
-                'percentage' => $pct . '%',
-                'numeric_pct' => $pct,
-            ];
-        });
-
-        // Filter search jika ada
-        if (!empty(trim($this->search))) {
-            $q = strtolower(trim($this->search));
-            $filteredTeacherRows = $teacherRows->filter(function ($r) use ($q) {
-                return str_contains(strtolower($r['name']), $q) || str_contains(strtolower($r['nip']), $q);
-            })->values();
-        } else {
-            $filteredTeacherRows = $teacherRows;
+        if (trim($this->search) !== '') {
+            $query = mb_strtolower(trim($this->search));
+            $rows = $rows->filter(fn (array $row) =>
+                str_contains(mb_strtolower($row['teacher']), $query)
+                || str_contains(mb_strtolower($row['class']), $query)
+                || str_contains(mb_strtolower($row['subject']), $query)
+                || str_contains(mb_strtolower($row['recorded_by']), $query)
+                || str_contains(mb_strtolower($row['note'] ?? ''), $query)
+            )->values();
         }
 
-        // Data Kelas
-        $classes = SchoolClass::with(['schedules.attendances' => function ($q) use ($startDate, $endDate) {
-            $q->whereBetween('date', [$startDate, $endDate]);
-        }])->orderBy('name')->get();
+        $selectedEvaluation = $this->selectedEvaluationId
+            ? TeacherEvaluation::query()
+                ->with([
+                    'schoolClass:id,name,major',
+                    'period:id,label,start_time,end_time',
+                    'subject:id,name',
+                    'teacher:id,name,nip',
+                    'recordedBy:id,name',
+                ])
+                ->whereKey($this->selectedEvaluationId)
+                ->whereBetween('date', [$startDate, $endDate])
+                ->first()
+            : null;
 
-        $classRows = $classes->map(function (SchoolClass $class) {
-            $attendances = $class->schedules->flatMap->attendances;
-            $total = $attendances->count();
-            $hadir = $attendances->where('status', 'hadir')->count();
-            $terlambat = $attendances->where('status', 'terlambat')->count();
-            $kosong = $attendances->where('status', 'kosong')->count();
-            $izin = $attendances->where('status', 'izin')->count();
-            $sakit = $attendances->where('status', 'sakit')->count();
-            $dinas = $attendances->where('status', 'dinas')->count();
-            $pct = $total > 0 ? round((($hadir + $terlambat) / $total) * 100, 1) : 0;
-
-            return [
-                'id' => $class->id,
-                'name' => $class->name,
-                'academic_year' => $class->academic_year,
-                'total_slot' => $total,
-                'hadir' => $hadir,
-                'terlambat' => $terlambat,
-                'kosong' => $kosong,
-                'izin' => $izin,
-                'sakit' => $sakit,
-                'dinas' => $dinas,
-                'percentage' => $pct . '%',
-                'numeric_pct' => $pct,
-            ];
-        });
-
-        // Filter search kelas jika ada
-        if (!empty(trim($this->search))) {
-            $q = strtolower(trim($this->search));
-            $filteredClassRows = $classRows->filter(function ($r) use ($q) {
-                return str_contains(strtolower($r['name']), $q) || str_contains(strtolower($r['academic_year'] ?? ''), $q);
-            })->values();
-        } else {
-            $filteredClassRows = $classRows;
-        }
-
-        // Summary Metrics
-        $totalSlotsAll = $teacherRows->sum('total_slot');
-        $totalHadirAll = $teacherRows->sum('hadir');
-        $totalTerlambatAll = $teacherRows->sum('terlambat');
-        $totalKosongAll = $teacherRows->sum('kosong');
-        $totalIzinAll = $teacherRows->sum(fn ($r) => $r['izin'] + $r['sakit'] + $r['dinas']);
-        $totalLateMinutesAll = $teacherRows->sum('total_late_minutes');
-        $overallRate = $totalSlotsAll > 0 ? round((($totalHadirAll + $totalTerlambatAll) / $totalSlotsAll) * 100, 1) : 0;
+        $carbonStart = Carbon::parse($startDate);
+        $carbonEnd = Carbon::parse($endDate);
 
         return [
-            'teacherRows' => $filteredTeacherRows,
-            'classRows' => $filteredClassRows,
-            'rawTeacherCount' => $teacherRows->count(),
-            'rawClassCount' => $classRows->count(),
-            'totalSlotsAll' => $totalSlotsAll,
-            'totalHadirAll' => $totalHadirAll,
-            'totalTerlambatAll' => $totalTerlambatAll,
-            'totalKosongAll' => $totalKosongAll,
-            'totalIzinAll' => $totalIzinAll,
-            'totalLateMinutesAll' => $totalLateMinutesAll,
-            'overallRate' => $overallRate,
+            'rows' => $rows,
+            'teacherSummaries' => $teacherSummaries,
+            'attentionTeachers' => $attentionTeachers,
+            'selectedEvaluation' => $selectedEvaluation,
+            'totalSubmissions' => $evaluations->count(),
+            'totalLowRatings' => $teacherSummaries->sum('kurang_count'),
+            'teacherPresentCount' => $evaluations->filter(fn (TeacherEvaluation $evaluation) => $evaluation->teacher_present === true)->count(),
+            'teacherAbsentCount' => $evaluations->filter(fn (TeacherEvaluation $evaluation) => $evaluation->teacher_present === false)->count(),
             'periodLabel' => $carbonStart->translatedFormat('d F Y') . ' – ' . $carbonEnd->translatedFormat('d F Y'),
             'monthName' => $carbonStart->translatedFormat('F Y'),
         ];
+    }
+
+    private function dateRange(): array
+    {
+        $start = Carbon::create($this->year, $this->month, 1)->startOfMonth();
+
+        return [$start->toDateString(), $start->copy()->endOfMonth()->toDateString()];
     }
 }

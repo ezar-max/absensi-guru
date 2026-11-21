@@ -27,7 +27,7 @@ class TodayStatsOverview extends BaseWidget
         $totalSlots = Schedule::where('day_of_week', $dayOfWeek)->count();
 
         // Absensi hari ini
-        $attendances = Attendance::where('date', $todayDate)->get();
+        $attendances = Attendance::whereDate('date', $todayDate)->get();
 
         $hadir = $attendances->where('status', 'hadir')->count();
         $terlambat = $attendances->where('status', 'terlambat')->count();

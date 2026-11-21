@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { View, ActivityIndicator } from 'react-native';
+import * as Notifications from 'expo-notifications';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   useFonts,
@@ -20,6 +21,15 @@ const queryClient = new QueryClient({
       refetchOnWindowFocus: true,
     },
   },
+});
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
 });
 
 function RootNavigation() {
@@ -41,6 +51,23 @@ function RootNavigation() {
       router.replace('/(tabs)');
     }
   }, [user, isLoading, segments]);
+
+  useEffect(() => {
+    const openRatingFromNotification = (response: Notifications.NotificationResponse) => {
+      if (!user || isLoading) return;
+      const url = response.notification.request.content.data?.url;
+      if (url === '/(tabs)/rating') {
+        router.push('/(tabs)/rating');
+        void Notifications.clearLastNotificationResponse();
+      }
+    };
+
+    const lastResponse = Notifications.getLastNotificationResponse();
+    if (lastResponse) openRatingFromNotification(lastResponse);
+
+    const subscription = Notifications.addNotificationResponseReceivedListener(openRatingFromNotification);
+    return () => subscription.remove();
+  }, [isLoading, router, user]);
 
   if (isLoading) {
     return (

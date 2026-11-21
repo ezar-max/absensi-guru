@@ -15,6 +15,7 @@ class SchoolClass extends Model
 
     protected $fillable = [
         'name',
+        'major',
         'academic_year',
     ];
 

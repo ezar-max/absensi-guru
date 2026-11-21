@@ -34,6 +34,14 @@ class TeacherResource extends Resource
                     ->placeholder('Opsional')
                     ->unique(ignoreRecord: true)
                     ->maxLength(50),
+                Forms\Components\Select::make('subjects')
+                    ->label('Mata Pelajaran yang Diajar')
+                    ->relationship('subjects', 'name')
+                    ->multiple()
+                    ->searchable()
+                    ->preload()
+                    ->required()
+                    ->columnSpanFull(),
                 Forms\Components\Toggle::make('is_active')
                     ->label('Status Aktif')
                     ->default(true)
@@ -53,6 +61,11 @@ class TeacherResource extends Resource
                     ->label('NIP')
                     ->searchable()
                     ->default('-'),
+                Tables\Columns\TextColumn::make('subjects.name')
+                    ->label('Mata Pelajaran')
+                    ->badge()
+                    ->separator(', ')
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('schedules_count')
                     ->label('Beban Mengajar / Minggu')
                     ->counts('schedules')

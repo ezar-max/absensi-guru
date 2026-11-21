@@ -153,6 +153,10 @@ export default function LoginScreen() {
                 style={styles.logoImage}
                 resizeMode="contain"
               />
+              <View style={styles.aiWelcomeBadge}>
+                <View style={styles.aiWelcomeDot} />
+                <Text style={styles.aiWelcomeText}>SMART CAMPUS ASSISTANT</Text>
+              </View>
               <Text style={styles.schoolNameLine1}>SMKN 1</Text>
               <Text style={styles.schoolNameLine2}>GUNUNG PUTRI</Text>
 
@@ -314,7 +318,7 @@ export default function LoginScreen() {
                 <TextInput
                   value={serverUrlInput}
                   onChangeText={setServerUrlInput}
-                  placeholder="http://192.168.1.8:8000/api"
+                  placeholder="http://192.168.1.13:8000/api"
                   placeholderTextColor="#94a3b8"
                   autoCapitalize="none"
                   autoCorrect={false}
@@ -325,10 +329,10 @@ export default function LoginScreen() {
               {/* Tombol Preset Cepat */}
               <View style={styles.presetContainer}>
                 <TouchableOpacity
-                  onPress={() => setServerUrlInput('http://192.168.1.8:8000/api')}
+                  onPress={() => setServerUrlInput('http://192.168.1.13:8000/api')}
                   style={styles.presetChip}
                 >
-                  <Text style={styles.presetChipText}>Wi-Fi Laptop (192.168.1.8)</Text>
+                  <Text style={styles.presetChipText}>Wi-Fi Laptop (192.168.1.13)</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => setServerUrlInput('http://10.0.2.2:8000/api')}
@@ -427,6 +431,24 @@ const styles = StyleSheet.create({
     height: 64,
     marginBottom: 8,
   },
+  aiWelcomeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 7,
+  },
+  aiWelcomeDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#22d3ee',
+    marginRight: 6,
+  },
+  aiWelcomeText: {
+    fontFamily: Typography.fontFamily.bold,
+    fontSize: 8,
+    letterSpacing: 1.2,
+    color: '#0891b2',
+  },
   schoolNameLine1: {
     fontFamily: Typography.fontFamily.bold,
     fontSize: 12,
@@ -457,9 +479,21 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   formSection: {
-    paddingHorizontal: 28,
+    marginHorizontal: 20,
+    paddingHorizontal: 20,
+    paddingTop: 18,
+    paddingBottom: 18,
     marginTop: 20,
     marginBottom: 16,
+    borderRadius: 24,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#e8eef7',
+    shadowColor: '#1e3a8a',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.10,
+    shadowRadius: 24,
+    elevation: 8,
   },
   errorAlert: {
     backgroundColor: '#fee2e2',

@@ -111,7 +111,7 @@ class AttendanceService
                 $editLockMin
             ) {
                 $attendance = Attendance::where('schedule_id', $schedule->id)
-                    ->where('date', $todayDate)
+                    ->whereDate('date', $todayDate)
                     ->lockForUpdate()
                     ->first();
 

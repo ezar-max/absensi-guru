@@ -30,6 +30,11 @@ class SchoolClassResource extends Resource
                     ->placeholder('Misal: X IPA 1')
                     ->required()
                     ->maxLength(50),
+                Forms\Components\TextInput::make('major')
+                    ->label('Jurusan')
+                    ->placeholder('Misal: IPA, IPS, TKJ, RPL')
+                    ->required()
+                    ->maxLength(50),
                 Forms\Components\TextInput::make('academic_year')
                     ->label('Tahun Ajaran')
                     ->placeholder('Misal: 2026/2027')
@@ -47,6 +52,12 @@ class SchoolClassResource extends Resource
                     ->label('Nama Kelas')
                     ->searchable()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('major')
+                    ->label('Jurusan')
+                    ->searchable()
+                    ->sortable()
+                    ->badge()
+                    ->color('primary'),
                 Tables\Columns\TextColumn::make('academic_year')
                     ->label('Tahun Ajaran')
                     ->sortable(),

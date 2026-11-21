@@ -53,41 +53,40 @@
 </head>
 <body>
     <div class="header">
-        <h2>LAPORAN REKAPITULASI KEHADIRAN GURU</h2>
+        <h2>LAPORAN REKAP KEHADIRAN DAN PENILAIAN GURU</h2>
         <p>Periode Bulan: <b>{{ $monthName }}</b></p>
     </div>
 
     <table>
         <thead>
             <tr>
-                <th width="5%">No</th>
-                <th class="text-left" width="25%">Nama Guru</th>
-                <th width="10%">Total Slot</th>
-                <th width="8%">Hadir</th>
-                <th width="8%">Terlambat</th>
-                <th width="8%">Kosong</th>
-                <th width="8%">Izin/Skt/Dns</th>
-                <th width="12%">Menit Telat</th>
-                <th width="12%">% Kehadiran</th>
+                <th width="7%">Tanggal</th>
+                <th width="12%">Kelas / Jurusan</th>
+                <th width="14%">Jam / Mapel</th>
+                <th width="15%">Guru</th>
+                <th width="10%">Kehadiran</th>
+                <th width="10%">Penilaian</th>
+                <th width="12%">Catatan</th>
+                <th width="12%">Diisi oleh</th>
             </tr>
         </thead>
         <tbody>
-            @foreach($items as $idx => $row)
+            @forelse($items as $row)
                 <tr>
-                    <td>{{ $idx + 1 }}</td>
-                    <td class="text-left">
-                        <b>{{ $row['name'] }}</b><br>
-                        <small style="color: #666;">NIP: {{ $row['nip'] }}</small>
-                    </td>
-                    <td>{{ $row['total_slot'] }}</td>
-                    <td style="color: #16A34A; font-weight: bold;">{{ $row['hadir'] }}</td>
-                    <td style="color: #D97706; font-weight: bold;">{{ $row['terlambat'] }}</td>
-                    <td style="color: #DC2626; font-weight: bold;">{{ $row['kosong'] }}</td>
-                    <td>{{ $row['izin'] + $row['sakit'] + $row['dinas'] }}</td>
-                    <td>{{ $row['total_late_minutes'] }} mnt</td>
-                    <td style="font-weight: bold;">{{ $row['percentage'] }}</td>
+                    <td>{{ \Carbon\Carbon::parse($row['date'])->translatedFormat('d M Y') }}</td>
+                    <td>{{ $row['class'] }} / {{ $row['major'] }}</td>
+                    <td>{{ $row['period'] }} / {{ $row['subject'] }}</td>
+                    <td>{{ $row['teacher'] }}<br><small>NIP: {{ $row['nip'] }}</small></td>
+                    <td>{{ $row['teacher_presence'] }}</td>
+                    <td>{{ $row['rating'] }}</td>
+                    <td class="text-left">{{ $row['note'] }}</td>
+                    <td>{{ $row['recorded_by'] }}</td>
                 </tr>
-            @endforeach
+            @empty
+                <tr>
+                    <td colspan="8">Belum ada laporan pada periode ini.</td>
+                </tr>
+            @endforelse
         </tbody>
     </table>
 

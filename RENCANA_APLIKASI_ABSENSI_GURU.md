@@ -400,7 +400,7 @@ Kerjakan per fase, commit per fase, dan jalankan test sebelum lanjut.
 ---
 
 ## 15. Rencana Lanjutan (setelah V1, jangan dibuat sekarang)
-- Notifikasi push (FCM) saat jam pelajaran dimulai dan saat ada guru kosong → siapkan kolom `device_tokens` kelak.
+- Pengingat admin di dalam aplikasi dan push notification Android via FCM tanpa bunyi.
 - Mode offline ringan (antrean lokal + sinkron) → karena waktu dari server, perlu desain khusus untuk waktu absen offline.
 - Foto/catatan bukti saat guru kosong.
 - Guru pengganti dan tukar jam.

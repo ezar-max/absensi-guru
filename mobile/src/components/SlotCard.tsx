@@ -95,6 +95,22 @@ export const SlotCard: React.FC<SlotCardProps> = ({
         },
       ]}
     >
+      {isHighlighted && <View style={styles.liveAccent} />}
+      {hasAttendance && (
+        <View
+          style={[
+            styles.statusAccent,
+            {
+              backgroundColor:
+                slot.attendance?.status === 'hadir'
+                  ? '#10b981'
+                  : slot.attendance?.status === 'terlambat'
+                    ? '#f59e0b'
+                    : '#ef4444',
+            },
+          ]}
+        />
+      )}
       <View style={styles.cardInner}>
         {/* Header Kartu: Jam, Periode & Status */}
         <View style={styles.headerRow}>
@@ -225,13 +241,30 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: Radius.card,
     marginBottom: Spacing.md,
-    shadowColor: '#0f172a',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
+    shadowColor: '#1e3a8a',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.08,
+    shadowRadius: 14,
+    elevation: 4,
     position: 'relative',
     overflow: 'hidden',
+  },
+  liveAccent: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 5,
+    backgroundColor: '#22d3ee',
+  },
+  statusAccent: {
+    position: 'absolute',
+    right: 14,
+    top: 0,
+    width: 42,
+    height: 4,
+    borderBottomLeftRadius: 6,
+    borderBottomRightRadius: 6,
   },
   cardInner: {
     padding: Spacing.lg,

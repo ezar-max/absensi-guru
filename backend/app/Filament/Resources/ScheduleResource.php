@@ -18,6 +18,7 @@ use InvalidArgumentException;
 
 class ScheduleResource extends Resource
 {
+    protected static bool $shouldRegisterNavigation = false;
     protected static ?string $model = Schedule::class;
     protected static ?string $navigationIcon = 'heroicon-o-calendar';
     protected static ?string $navigationGroup = 'Jadwal';

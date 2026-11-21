@@ -35,7 +35,7 @@ class AttentionNeededTable extends BaseWidget
             });
 
             if (! $att && $record->relationLoaded('attendances')) {
-                $att = Attendance::where('schedule_id', $record->id)->where('date', $todayDate)->first();
+                $att = Attendance::where('schedule_id', $record->id)->whereDate('date', $todayDate)->first();
             }
 
             return $att;
@@ -50,12 +50,12 @@ class AttentionNeededTable extends BaseWidget
                     ->where(function (Builder $q) use ($todayDate, $currentTime) {
                         // 1. Sudah lewat jam selesai dan belum diabsen
                         $q->where('periods.end_time', '<=', $currentTime)
-                          ->whereDoesntHave('attendances', fn ($att) => $att->where('date', $todayDate));
+                          ->whereDoesntHave('attendances', fn ($att) => $att->whereDate('date', $todayDate));
 
                         // 2. Atau sudah diabsen tapi statusnya kosong, izin, sakit, atau dinas
-                        $q->orWhereHas('attendances', fn ($att) => $att->where('date', $todayDate)->whereIn('status', ['kosong', 'izin', 'sakit', 'dinas']));
+                        $q->orWhereHas('attendances', fn ($att) => $att->whereDate('date', $todayDate)->whereIn('status', ['kosong', 'izin', 'sakit', 'dinas']));
                     })
-                    ->with(['schoolClass', 'period', 'subject', 'teacher', 'attendances' => fn ($att) => $att->where('date', $todayDate)])
+                    ->with(['schoolClass', 'period', 'subject', 'teacher', 'attendances' => fn ($att) => $att->whereDate('date', $todayDate)])
                     ->select('schedules.*')
             )
             ->columns([

@@ -12,6 +12,11 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Hash;
+use App\Models\AttendanceReminder;
+use App\Models\Period;
+use App\Services\FcmMessagingException;
+use App\Services\FcmMessagingService;
+use Illuminate\Support\Facades\Auth;
 
 class SecretaryResource extends Resource
 {
@@ -102,6 +107,64 @@ class SecretaryResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('sendAttendanceReminder')
+                    ->label('Kirim Pengingat Penilaian')
+                    ->icon('heroicon-o-bell-alert')
+                    ->color('warning')
+                    ->modalHeading('Kirim Pengingat Pengisian Penilaian')
+                    ->form([
+                        Forms\Components\Select::make('period_id')
+                            ->label('Jam Pelajaran')
+                            ->options(Period::query()->orderBy('start_time')->pluck('label', 'id'))
+                            ->required()
+                            ->helperText('Pilih jam pelajaran yang perlu diingatkan.'),
+                        Forms\Components\Textarea::make('message')
+                            ->label('Pesan Tambahan')
+                            ->default('Segera isi penilaian guru untuk jam pelajaran yang belum tercatat.')
+                            ->required()
+                            ->maxLength(500),
+                    ])
+                    ->action(function (User $record, array $data): void {
+                        $period = Period::findOrFail($data['period_id']);
+
+                        $reminder = AttendanceReminder::create([
+                            'user_id' => $record->id,
+                            'created_by' => Auth::id(),
+                            'period_id' => $period->id,
+                            'title' => 'Pengingat Penilaian ' . $period->label,
+                            'message' => $data['message'],
+                        ]);
+
+                        try {
+                            $sent = app(FcmMessagingService::class)->sendReminder($record, $reminder);
+                        } catch (FcmMessagingException $exception) {
+                            report($exception);
+
+                            Notification::make()
+                                ->title('Pengingat tersimpan, tetapi push gagal')
+                                ->body($exception->getMessage())
+                                ->warning()
+                                ->send();
+
+                            return;
+                        }
+
+                        if ($sent === 0) {
+                            Notification::make()
+                                ->title('Pengingat tersimpan, perangkat belum terdaftar')
+                                ->body('Pengguna perlu mengaktifkan izin notifikasi dan membuka aplikasi setidaknya sekali.')
+                                ->warning()
+                                ->send();
+
+                            return;
+                        }
+
+                        Notification::make()
+                            ->title('Pengingat push terkirim')
+                            ->body("Pengingat penilaian {$period->label} dikirim ke {$sent} perangkat milik {$record->name}.")
+                            ->success()
+                            ->send();
+                    }),
                 Tables\Actions\Action::make('resetPassword')
                     ->label('Reset Sandi')
                     ->icon('heroicon-o-key')

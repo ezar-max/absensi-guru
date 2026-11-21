@@ -37,13 +37,16 @@ class DatabaseSeeder extends Seeder
 
         // 3. Classes (3 kelas)
         $class1 = SchoolClass::firstOrCreate(
-            ['name' => 'X IPA 1', 'academic_year' => '2026/2027']
+            ['name' => 'X IPA 1', 'academic_year' => '2026/2027'],
+            ['major' => 'IPA']
         );
         $class2 = SchoolClass::firstOrCreate(
-            ['name' => 'X IPA 2', 'academic_year' => '2026/2027']
+            ['name' => 'X IPA 2', 'academic_year' => '2026/2027'],
+            ['major' => 'IPA']
         );
         $class3 = SchoolClass::firstOrCreate(
-            ['name' => 'XI IPA 1', 'academic_year' => '2026/2027']
+            ['name' => 'XI IPA 1', 'academic_year' => '2026/2027'],
+            ['major' => 'IPA']
         );
 
         // 4. Secretaries (2 sekretaris di kelas X IPA 1 untuk uji multi-sekretaris)
@@ -90,6 +93,7 @@ class DatabaseSeeder extends Seeder
         $subEng  = Subject::firstOrCreate(['name' => 'Bahasa Inggris']);
         $subPhys = Subject::firstOrCreate(['name' => 'Fisika']);
         $subBio  = Subject::firstOrCreate(['name' => 'Biologi']);
+        $subInfo = Subject::firstOrCreate(['name' => 'Informatika']);
 
         // 6. Teachers (6 guru)
         $t1 = Teacher::firstOrCreate(['name' => 'Pak Ahmad S.Pd', 'nip' => '198001012005011001', 'is_active' => true]);
@@ -98,6 +102,13 @@ class DatabaseSeeder extends Seeder
         $t4 = Teacher::firstOrCreate(['name' => 'Bu Dewi Lestari S.Pd', 'nip' => '198504042008022004', 'is_active' => true]);
         $t5 = Teacher::firstOrCreate(['name' => 'Pak Eko Prasetyo S.Kom', 'nip' => '198705052010011005', 'is_active' => true]);
         $t6 = Teacher::firstOrCreate(['name' => 'Bu Rina Wati S.Pd', 'nip' => '199006062015022006', 'is_active' => true]);
+
+        $t1->subjects()->syncWithoutDetaching([$subMath->id]);
+        $t2->subjects()->syncWithoutDetaching([$subIndo->id]);
+        $t3->subjects()->syncWithoutDetaching([$subPhys->id]);
+        $t4->subjects()->syncWithoutDetaching([$subEng->id]);
+        $t5->subjects()->syncWithoutDetaching([$subInfo->id]);
+        $t6->subjects()->syncWithoutDetaching([$subBio->id]);
 
         // 7. Periods (6 jam pelajaran tanpa tumpang tindih)
         $p1 = Period::firstOrCreate(['label' => 'Jam ke-1'], ['start_time' => '07:00:00', 'end_time' => '07:45:00']);

@@ -194,3 +194,116 @@ Mengambil riwayat absensi kelas sekretaris dengan paginasi (30 data per halaman)
 }
 ```
 
+---
+
+## 6. GET `/api/teacher-ratings/today`
+Mengambil jadwal pelajaran hari ini untuk kelas sekretaris, status pengisian penilaian, dan waktu server.
+
+### Response Sukses (200 OK)
+```json
+{
+  "server_time": "2026-11-21T07:30:00+07:00",
+  "date": "2026-11-21",
+  "active_period_id": 1,
+  "holiday": null,
+  "ratings": [
+    { "value": "sangat_baik", "label": "Sangat baik", "criteria": "Guru hadir tepat waktu" }
+  ],
+  "data": [
+    {
+      "schedule_id": 1,
+      "evaluation_id": null,
+      "class_id": 1,
+      "period_id": 1,
+      "subject_id": 1,
+      "teacher_id": 1,
+      "class": "X IPA 1",
+      "period": "Jam ke-1",
+      "start": "07:00",
+      "end": "07:45",
+      "subject": "Matematika",
+      "teacher": "Pak Ahmad S.Pd",
+      "rating": null,
+      "rating_label": null,
+      "teacher_present": null,
+      "note": null,
+      "created_at": null,
+      "created_at": null,
+      "can_rate": true,
+      "is_upcoming": false,
+      "is_expired": false
+    }
+  ]
+}
+```
+Penilaian hanya dapat dikirim selama jam pelajaran berlangsung. Jadwal yang telah lewat ditolak oleh server.
+
+## 7. POST `/api/teacher-ratings`
+Menyimpan penilaian untuk kelas dan jam pelajaran yang dipilih. Pengisian hanya diterima ketika jam tersebut sedang berlangsung.
+
+### Header
+`Authorization: Bearer <token>`
+
+### Request Body
+```json
+{
+  "class_id": 1,
+  "period_id": 1,
+  "subject_id": 1,
+  "teacher_id": 1,
+  "rating": "baik",
+  "teacher_present": true,
+  "note": "Catatan opsional"
+}
+```
+`teacher_present` wajib diisi dengan `true` jika guru masuk atau `false` jika tidak masuk. Semua laporan tampil bersama di menu admin **Rekap Kehadiran**, dan catatan tersedia melalui tombol **Lihat**.
+
+## 8. GET `/api/teacher-ratings/options`
+Mengambil pilihan form penilaian untuk sekretaris: kelas yang diampu, jam pelajaran, mapel, guru aktif beserta mapel yang diajarkan, dan kriteria nilai.
+
+### Header
+`Authorization: Bearer <token>`
+
+### Response Sukses (200 OK)
+```json
+{
+  "classes": [{ "id": 1, "name": "X IPA 1" }],
+  "periods": [{ "id": 1, "label": "Jam ke-1", "start": "07:00", "end": "07:45" }],
+  "subjects": [{ "id": 1, "name": "Matematika" }],
+  "teachers": [{ "id": 1, "name": "Pak Ahmad S.Pd", "subject_ids": [1] }],
+  "ratings": [
+    { "value": "sangat_baik", "label": "Sangat baik", "criteria": "Guru hadir tepat waktu" },
+    { "value": "baik", "label": "Baik", "criteria": "Terlambat sampai 5 menit" },
+    { "value": "cukup", "label": "Cukup", "criteria": "Terlambat lebih dari 5 menit" },
+    { "value": "kurang", "label": "Kurang", "criteria": "Kelas kosong atau guru tidak hadir" }
+  ]
+}
+```
+
+## 9. GET `/api/notifications`
+Mengambil pengingat admin yang ditampilkan di aplikasi. Pengingat juga dikirim sebagai push notification ke perangkat Android yang telah terdaftar.
+
+## 10. POST `/api/notifications/{notification}/read`
+Menandai pengingat yang telah dilihat sebagai sudah dibaca.
+
+## 11. POST `/api/notifications/device-token`
+Mendaftarkan token perangkat Android milik pengguna yang sedang login untuk menerima FCM.
+
+### Request Body
+```json
+{
+  "token": "FCM_DEVICE_REGISTRATION_TOKEN",
+  "platform": "android"
+}
+```
+
+## 12. DELETE `/api/notifications/device-token`
+Menghapus token perangkat milik pengguna yang sedang login, misalnya saat logout.
+
+### Request Body
+```json
+{
+  "token": "FCM_DEVICE_REGISTRATION_TOKEN"
+}
+```
+

@@ -14,6 +14,7 @@ use Throwable;
 
 class ManageScheduleGrid extends Page
 {
+    protected static bool $shouldRegisterNavigation = false;
     protected static ?string $navigationIcon = 'heroicon-o-table-cells';
     protected static ?string $navigationGroup = 'Jadwal';
     protected static ?string $navigationLabel = 'Grid Jadwal';
